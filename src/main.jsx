@@ -4,12 +4,13 @@ import './index.css'
 import App from './App.jsx'
 import { Route, RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Home from './components/Home.jsx'
+import RegistrationPage from './components/RegistrationPage.jsx'
 
 const router = createBrowserRouter([
   { path : '/', element: <App />,
     children: [
       {path: '/', element: <Home/>},
-      {path: 'about', element: <div>About</div>},
+      {path: '/signup', element: <RegistrationPage/>},
    ],
   }
 ])
