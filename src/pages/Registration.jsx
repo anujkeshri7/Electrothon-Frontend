@@ -1,19 +1,13 @@
-import { useState } from "react";
-import LandingPage from "./components/LandingPage";
-import RegistrationPage from "./components/RegistrationPage";
+import StudentRegistration from '../components/StudentRegistration'
+import React from 'react'
 
-// Views: "landing" | "register"
-export default function App() {
-  const [view, setView] = useState("landing");
-
+function RegistrationPage() {
   return (
-    <div className="font-sans antialiased">
-      {view === "landing" && (
-        <LandingPage onRegister={() => setView("register")} />
-      )}
-      {view === "register" && (
-        <RegistrationPage onClose={() => setView("landing")} />
-      )}
+    <div>
+      <StudentRegistration/>
+      
     </div>
-  );
+  )
 }
+
+export default RegistrationPage
