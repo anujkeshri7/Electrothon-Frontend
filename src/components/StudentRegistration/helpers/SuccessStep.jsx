@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Sparkles, ArrowRight, Home, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function SuccessStep({ name, college }) {
   const [showContent, setShowContent] = useState(false);
   const [showActions, setShowActions] = useState(false);
+    const navigate = useNavigate();
 
   useEffect(() => {
     const t1 = setTimeout(() => setShowContent(true), 400);
@@ -16,7 +18,7 @@ export default function SuccessStep({ name, college }) {
 
   const handleCompleteProfile = () => {
     // Redirect to profile completion page
-    alert("Redirecting to Complete Profile page...");
+     navigate('/complete-profile');
     // In real app: navigate('/complete-profile')
   };
 
