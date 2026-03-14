@@ -49,6 +49,7 @@ export default function SignIn() {
 
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, { email, password }, { withCredentials: true });
       console.log("Sign-in response:", response.data);
+      navigate('/');
     
     
    } catch (error) {

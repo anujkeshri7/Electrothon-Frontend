@@ -92,7 +92,7 @@ export default function RightSidebar() {
 
 {/* AI Campus Assistant */}
     <button
-      onClick={() => navigate("/opportunity")}
+      onClick={() => navigate("/recommendations")}
       style={{
         width: "100%",
         padding: "18px 24px",
