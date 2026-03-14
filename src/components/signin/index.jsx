@@ -2,6 +2,11 @@
 import { useState } from "react";
 import {
   Mail,
+  Pill,
+  ShieldCheck,
+  Bot,
+  Users,
+  Zap,
   Lock,
   Eye,
   EyeOff,
@@ -59,33 +64,102 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex bg-[#0f0f1c]">
 
-      {/* LEFT SIDE BRANDING */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center px-16">
-        <div className="max-w-md">
-          
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold bg-gradient-to-br from-violet-600 to-violet-400">
+{/* LEFT SIDE BRANDING */}
+      <div className="hidden lg:flex w-1/2 flex-col justify-center px-20 relative z-10 left-in">
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-14">
+          <div className="relative">
+            <div
+              className="absolute inset-0 rounded-2xl"
+              style={{ background: "rgba(139,92,246,0.4)", animation: "pulseRing 2.5s ease-out infinite" }}
+            />
+            <div
+              className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg"
+              style={{
+                background: "linear-gradient(135deg,#7c3aed,#a855f7)",
+                boxShadow: "0 8px 24px rgba(124,58,237,0.45)",
+                fontFamily: "'Sora',sans-serif",
+              }}
+            >
               C
             </div>
-            <h1 className="text-2xl font-bold text-white">
-              Campus<span className="text-violet-400">Connect</span>
-            </h1>
           </div>
+          <div>
+            <p className="text-white font-bold text-xl leading-none" style={{ fontFamily: "'Sora',sans-serif" }}>
+              Campus<span className="text-violet-400">Link</span>
+            </p>
+            <p className="text-white/25 text-xs mt-0.5">Verified student network</p>
+          </div>
+        </div>
 
-          <h2 className="text-4xl font-bold text-white leading-tight mb-6">
-            Connect. Collaborate.
-            <span className="text-violet-400 block">
-              Build Your Campus Network.
-            </span>
+        {/* Headline */}
+        <div className="mb-10">
+          <h2
+            className="text-5xl font-extrabold text-white leading-[1.12] mb-5"
+            style={{ fontFamily: "'Sora',sans-serif" }}
+          >
+            Connect with<br />
+            <span className="text-shimmer">India's brightest</span><br />
+            campus minds.
           </h2>
-
-          <p className="text-white/50 text-lg">
-            CampusConnect helps students collaborate on projects,
-            discover opportunities, and grow their network across
-            campus communities.
+          <p className="text-white/45 text-base leading-relaxed max-w-sm">
+            A verified network for engineering and management students
+            across top colleges in India. Collaborate on projects,
+            find internships, and grow — powered by AI.
           </p>
+        </div>
+
+        {/* Feature pills */}
+        <div className="flex flex-wrap gap-2.5 mb-12">
+          
+              <ShieldCheck size={16} className="text-green-400" />
+              <span className="text-sm text-white/40 ml-1">College email verified</span>
+              <Bot size={16} className="text-purple-400 ml-4" />
+              <span className="text-sm text-white/40 ml-1">AI-powered matching</span>
+              <Zap size={16} className="text-yellow-400 ml-4" />
+              <span className="text-sm text-white/40 ml-1">Real-time collaboration</span>
+        
 
         </div>
+
+        {/* Stats strip */}
+        <div
+          className="flex items-center gap-8 px-6 py-4 rounded-2xl"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(12px)",
+            animation: "floatY 4s ease-in-out infinite",
+          }}
+        >
+          {[
+            { value: "50+",  label: "Colleges"     },
+            { value: "10k+", label: "Students"     },
+            { value: "2k+",  label: "Collaborations" },
+          ].map(({ value, label }, i) => (
+            <div key={label} className="flex items-center gap-5">
+              {i > 0 && <div className="h-8 w-px bg-white/10" />}
+              <div>
+                <p
+                  className="text-white font-bold text-lg leading-none"
+                  style={{ fontFamily: "'Sora',sans-serif" }}
+                >
+                  {value}
+                </p>
+                <p className="text-white/35 text-xs mt-0.5">{label}</p>
+              </div>
+            </div>
+          ))}
+          <div className="ml-auto flex items-center gap-1.5">
+            <div
+              className="w-2 h-2 rounded-full bg-emerald-400"
+              style={{ boxShadow: "0 0 8px rgba(52,211,153,0.8)" }}
+            />
+            <span className="text-xs text-emerald-400/80">Live</span>
+          </div>
+        </div>
+
       </div>
 
 
@@ -100,14 +174,14 @@ export default function SignIn() {
               C
             </div>
             <span className="font-bold text-white">
-              Campus<span className="text-violet-400">Connect</span>
+              Campus<span className="text-violet-400">Link</span>
             </span>
           </div>
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-white mb-2">
             Sign in to
-            <span className="block text-violet-400">CampusConnect</span>
+            <span className="block text-violet-400">CampusLink</span>
           </h2>
 
           <p className="text-sm text-white/40 mb-6">
