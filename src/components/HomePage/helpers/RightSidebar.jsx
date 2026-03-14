@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, TrendingUp, Calendar, Flame, ChevronRight } from "lucide-react";
+import { UserPlus, Bot, Send, TrendingUp, Calendar, Flame, ChevronRight, Cpu } from "lucide-react";
 import { SUGGESTED_PEOPLE, TRENDING_TAGS, UPCOMING_EVENTS } from "./constants";
 
 function SectionCard({ title, icon: Icon, children, action }) {
@@ -90,43 +90,70 @@ export default function RightSidebar() {
         </div>
       </SectionCard>
 
-      {/* Trending tags */}
-      <SectionCard title="Trending on campus" icon={TrendingUp}>
-        <div className="space-y-2">
-          {TRENDING_TAGS.map((t, i) => (
-            <button
-              key={t.tag}
-              className="w-full flex items-center justify-between group"
-              style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="text-xs w-4 text-center"
-                  style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-display)", fontWeight: 700 }}
-                >
-                  {i + 1}
-                </span>
-                <div>
-                  <div
-                    className="text-xs font-semibold group-hover:text-indigo-400 transition-colors"
-                    style={{ color: "rgba(255,255,255,0.75)", fontFamily: "var(--font-body)" }}
-                  >
-                    {t.tag}
-                    {t.hot && <Flame size={10} className="inline ml-1" style={{ color: "#f97316" }} />}
-                  </div>
-                  <div
-                    className="text-[10px]"
-                    style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}
-                  >
-                    {t.posts}
-                  </div>
-                </div>
-              </div>
-              <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#6366f1" }} />
-            </button>
-          ))}
+{/* AI Campus Assistant */}
+    <button
+      onClick={() => navigate("/opportunity")}
+      style={{
+        width: "100%",
+        padding: "18px 24px",
+        borderRadius: 18,
+        background: "#16161e",
+        border: "1px solid #2a2a3a",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        cursor: "pointer",
+        position: "relative",
+        overflow: "hidden",
+        transition: "border-color .2s, transform .15s",
+        fontFamily: "'Sora', sans-serif",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#6366f1";
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#2a2a3a";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      {/* Subtle glow */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 60% 80% at 20% 50%, rgba(99,102,241,0.07), transparent)",
+      }} />
+ 
+      {/* Orb */}
+      <div style={{
+        width: 46, height: 46, borderRadius: 14, flexShrink: 0,
+        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Bot size={22} color="#fff" />
+      </div>
+ 
+      {/* Text */}
+      <div style={{ flex: 1, textAlign: "left" }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#e4e4f0", letterSpacing: ".2px" }}>
+          Your AI Opportunity Radar
         </div>
-      </SectionCard>
+        <div style={{ fontSize: 12, color: "#555578", marginTop: 3 }}>
+          Hackathons · Internships · Events — curated just for you
+        </div>
+      </div>
+ 
+      {/* AI Badge */}
+      <span style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: ".5px",
+        background: "rgba(99,102,241,.15)", color: "#818cf8",
+        border: "1px solid rgba(99,102,241,.25)",
+        borderRadius: 6, padding: "3px 8px",
+      }}>
+        AI
+      </span>
+ 
+      <ChevronRight size={16} color="#3d3d5c" />
+    </button>
 
       {/* Upcoming events */}
       <SectionCard title="Upcoming events" icon={Calendar} action="See all">

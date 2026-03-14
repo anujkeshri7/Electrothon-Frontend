@@ -1,3 +1,4 @@
+import { Home, Compass, Users, MessageCircle, FolderKanban, Calendar, HelpCircle, Bookmark } from "lucide-react";
 export const CURRENT_USER = {
   id: "me",
   name: "Arjun Sharma",
@@ -132,13 +133,19 @@ export const UPCOMING_EVENTS = [
   { id: "e3", name: "Open Source Sprint", college: "Online", date: "Apr 2–5", type: "Workshop", color: "#10b981", going: 234 },
 ];
 
+
 export const NAV_ITEMS = [
-  { id: "home",    label: "Home",         icon: "🏠", active: true  },
-  { id: "explore", label: "Explore",      icon: "🔭", active: false },
-  { id: "connect", label: "Connections",  icon: "👥", active: false },
-  { id: "messages",label: "Messages",     icon: "💬", active: false, badge: 3 },
-  { id: "projects",label: "Projects",     icon: "🚀", active: false },
-  { id: "events",  label: "Events",       icon: "📅", active: false },
-  { id: "qa",      label: "Q&A",          icon: "❓", active: false },
-  { id: "saved",   label: "Saved",        icon: "🔖", active: false },
+  { id: "home",     label: "Home",        icon: Home,          active: true  },
+  { id: "explore",  label: "Explore",     icon: Compass,       active: false },
+  { id: "connect",  label: "Connections", icon: Users,         active: false },
+  { id: "messages", label: "Messages",    icon: MessageCircle, active: false, badge: 3 },
+  { id: "projects", label: "Projects",    icon: FolderKanban,  active: false },
+  { id: "events",   label: "Events",      icon: Calendar,      active: false },
+  { id: "qa",       label: "Q&A",         icon: HelpCircle,    active: false },
+  { id: "saved",    label: "Saved",       icon: Bookmark,      active: false },
 ];
+ 
+
+
+
+
