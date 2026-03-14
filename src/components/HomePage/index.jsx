@@ -7,6 +7,7 @@ import PostsFeed from "./helpers/PostsFeed";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ChatBot from "../ChatBot";
 
 const FEED_TABS = ["For you", "College", "Following", "Projects", "Questions"];
 
@@ -196,6 +197,7 @@ export default function HomePage() {
             }}
           >
             <RightSidebar />
+            <ChatBot userId={studentData?._id} />
           </aside>
 
         </div>
