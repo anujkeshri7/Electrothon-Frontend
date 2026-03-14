@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Bell, MessageCircle, X, Command } from "lucide-react";
-import { CURRENT_USER } from "../constants";
+import { CURRENT_USER } from "./constants";
 
 export default function Navbar({ onProfileClick }) {
   const [searchFocused, setSearchFocused] = useState(false);
