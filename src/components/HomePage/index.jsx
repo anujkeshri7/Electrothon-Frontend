@@ -5,6 +5,8 @@ import RightSidebar from "./helpers/RightSidebar";
 import CreatePost from "./helpers/CreatePost";
 import PostsFeed from "./helpers/PostsFeed";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const FEED_TABS = ["For you", "College", "Following", "Projects", "Questions"];
 
@@ -17,7 +19,32 @@ export default function HomePage() {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  const handleProfileClick = () => Navigate("/profile");
+  const [studentData, setStudentData] = useState(null);
+
+  const fetchStudentData = async () => {
+    try {
+
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/profile/me`, { withCredentials: true });
+      if (res.data.success) {
+        const studentData = res.data.student;
+        console.log("Fetched student data:", studentData);  
+        setStudentData(studentData);
+      }else{
+        console.log("Failed to fetch student data:", res.data.message);
+      }
+      
+    } catch (error) {
+      console.log("Error fetching student data:", error.response?.data?.message || error.message);
+      
+    }
+
+  }
+
+  useEffect(() => {fetchStudentData()}, []);
+
+  const navigate = useNavigate();
+
+  const handleProfileClick = () =>navigate("/profile/me");
 
   return (
     <div className="min-h-screen" style={{ background: "#070711" }}>
@@ -29,7 +56,9 @@ export default function HomePage() {
       <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)`, backgroundSize: "60px 60px", zIndex: 0 }} />
 
       {/* ── Navbar ── */}
-      <Navbar onProfileClick={handleProfileClick} />
+      <Navbar 
+      studentData={studentData}
+      onProfileClick={handleProfileClick} />
 
 
 
@@ -70,6 +99,8 @@ export default function HomePage() {
             setSidebarOpen(false);
             handleProfileClick();
           }}
+
+          studentData={studentData}
         />
       </aside>
 

@@ -22,7 +22,7 @@ const router = createBrowserRouter([
       {path: '/login', element:<SignIn/>},
       {path: '/communities', element:<CommunityPage/> },
       {path: '/complete-profile/:studentId', element: <CompleteProfilePage/>},
-      {path: '/profile', element: <ProfilePage/>},
+      {path: '/profile/me', element: <ProfilePage/>},
       {path: '/ai-recommendations', element: <AIRecommendations/>}
    ],
   }

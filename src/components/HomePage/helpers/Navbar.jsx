@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Search, Bell, MessageCircle, X, Command } from "lucide-react";
 import { CURRENT_USER } from "./constants";
 
-export default function Navbar({ onProfileClick }) {
+export default function Navbar({ studentData,onProfileClick }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [notifOpen, setNotifOpen] = useState(false);
+
+  const CURRENT_USER = studentData
 
   const NOTIFS = [
     { id: 1, text: "Priya Mehta connected with you", time: "2m", unread: true, color: "#3b82f6" },
@@ -190,10 +192,10 @@ export default function Navbar({ onProfileClick }) {
               fontFamily: "var(--font-display)",
             }}
           >
-            {CURRENT_USER.initials}
+            <img src={CURRENT_USER?.avatar} alt={CURRENT_USER?.name} className="w-full h-full object-cover rounded-lg" /> 
           </div>
           <span className="text-xs font-medium hidden md:block" style={{ color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-body)" }}>
-            {CURRENT_USER.name.split(" ")[0]}
+            {CURRENT_USER?.name.split(" ")[0]}
           </span>
         </button>
       </div>
