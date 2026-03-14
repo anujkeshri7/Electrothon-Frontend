@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -23,10 +24,10 @@ export default function SignIn() {
 
   const navigate = useNavigate();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     setError("");
 
-    if (!email || !password) {
+    if (!email || !password){
       setError("Please fill in your email and password.");
       return;
     }
@@ -38,10 +39,21 @@ export default function SignIn() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      alert("Signed in successfully");
-    }, 1500);
+   try {
+      // Simulate API call
+
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, { email, password }, { withCredentials: true });
+      console.log("Sign-in response:", response.data);
+    
+    
+   } catch (error) {
+
+    console.log("Sign-in error:", error);
+      setError("An unexpected error occurred. Please try again.");
+    
+   }finally{
+    setLoading(false);
+   }
   };
 
   return (
