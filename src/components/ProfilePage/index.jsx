@@ -10,21 +10,49 @@ import ActivityFeed from "./helpers/ActivityFeed";
 import SettingsPanel from "./helpers/SettingsPanel";
 import { DUMMY_USER } from "./helpers/constants";
 
+// ─── Card wrapper used throughout ────────────────────────────────────────────
+function Card({ children, className = "" }) {
+  return (
+    <div
+      className={`rounded-2xl ${className}`}
+      style={{
+        background: "rgba(255,255,255,0.025)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 8px 40px rgba(0,0,0,0.35)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [user] = useState(DUMMY_USER);
 
   const handleEditProfile = () => {
-    // In real app: navigate('/complete-profile')
     alert("Redirecting to Edit Profile...");
   };
 
   return (
+    /*
+     * SCROLL RULES
+     * ─────────────────────────────────────────────────────────
+     * • Entire page scrolls naturally (no overflow tricks)
+     * • Navbar (rendered outside this component) is fixed
+     * • Right sidebar: position sticky, top = navbar height + gap
+     *   → stays in view while left column scrolls past it
+     * • Left column (profile cards + activity): scrolls with page
+     * • Decorative blobs + grid: fixed, never scroll
+     */
     <div
       className="min-h-screen relative overflow-x-hidden"
       style={{ background: "#070711" }}
     >
-      {/* Ambient blobs */}
+
+      {/* ── Ambient blobs (fixed, never scroll) ───────────────── */}
       <div
         className="fixed pointer-events-none"
         style={{
@@ -44,7 +72,7 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* Grid overlay */}
+      {/* ── Grid overlay (fixed, never scroll) ────────────────── */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -57,49 +85,127 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* Page content */}
+      {/* ── Page body (scrolls with page) ─────────────────────── */}
       <div
-        className="relative z-10 mx-auto px-4 py-6"
-        style={{ maxWidth: "clamp(340px, 96vw, 1400px)" }}
+        className="relative z-10 mx-auto w-full"
+        style={{
+          maxWidth: "1080px",
+          padding: "80px 16px 64px",   /* top = navbar height + breathing room */
+        }}
       >
-        <div className="space-y-4">
-          {/* Header card */}
-          <div
-            className="rounded-2xl p-5"
+
+        {/* ── Profile header card — full width ──────────────────── */}
+        <Card className="mb-4 overflow-hidden">
+          <ProfileHeader
+            user={user}
+            onSettingsOpen={() => setSettingsOpen(true)}
+            onEditProfile={handleEditProfile}
+          />
+        </Card>
+
+        {/* ── Two-column body ───────────────────────────────────── */}
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+
+          {/* ── LEFT: main profile content (scrolls with page) ──── */}
+          <div className="flex-1 min-w-0 space-y-4">
+
+            {/* About */}
+            <Card className="p-5">
+              <AboutSection user={user} />
+            </Card>
+
+            {/* Academic */}
+            <Card className="p-5">
+              <AcademicSection user={user} />
+            </Card>
+
+            {/* Skills */}
+            <Card className="p-5">
+              <SkillsSection user={user} />
+            </Card>
+
+            {/* Activity feed */}
+            <Card className="p-5">
+              <ActivityFeed />
+            </Card>
+
+          </div>
+
+          {/* ── RIGHT: sticky sidebar (does NOT scroll away) ─────── */}
+          <aside
+            className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4"
             style={{
-              background: "rgba(255,255,255,0.025)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 24px 60px rgba(0,0,0,0.4)",
+              position: "sticky",
+              top: "80px",                        /* matches navbar height */
+              maxHeight: "calc(100vh - 96px)",    /* cap so it never overflows viewport */
+              overflowY: "auto",
+              scrollbarWidth: "none",             /* hide scrollbar on Firefox */
             }}
           >
-            <ProfileHeader
-              user={user}
-              onSettingsOpen={() => setSettingsOpen(true)}
-              onEditProfile={handleEditProfile}
-            />
-          </div>
-
-          {/* Two column layout on wider screens */}
-          <div className="flex flex-col lg:flex-row gap-4 items-start">
-            {/* Left col — bio, academic, skills, social */}
-            <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
-              <AboutSection user={user} />
-              <AcademicSection user={user} />
-              <SkillsSection user={user} />
+            {/* Socials */}
+            <Card className="p-5">
               <SocialSection user={user} />
-            </div>
+            </Card>
 
-            {/* Right col — activity feed */}
-            <div className="flex-1 min-w-0">
-              <ActivityFeed />
-            </div>
-          </div>
+            {/* Quick stats / profile completeness — placeholder card */}
+            <Card className="p-5">
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}
+              >
+                Profile strength
+              </p>
+              {[
+                { label: "Photo",    done: true  },
+                { label: "Bio",      done: !!user?.bio },
+                { label: "Skills",   done: true  },
+                { label: "Academic", done: true  },
+                { label: "Social",   done: false },
+              ].map(({ label, done }) => (
+                <div key={label} className="flex items-center justify-between mb-2.5">
+                  <span
+                    className="text-xs"
+                    style={{ color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-body)" }}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      background: done ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
+                      color: done ? "#34d399" : "rgba(255,255,255,0.25)",
+                      border: done ? "1px solid rgba(52,211,153,0.25)" : "1px solid rgba(255,255,255,0.07)",
+                      fontFamily: "var(--font-body)",
+                    }}
+                  >
+                    {done ? "Done" : "Add"}
+                  </span>
+                </div>
+              ))}
+              {/* Progress bar */}
+              <div className="mt-3 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: "80%",
+                    background: "linear-gradient(90deg, #6366f1, #34d399)",
+                  }}
+                />
+              </div>
+              <p
+                className="text-[10px] mt-1.5 text-right"
+                style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-body)" }}
+              >
+                4 / 5 complete
+              </p>
+            </Card>
+
+          </aside>
+
         </div>
       </div>
 
-      {/* Settings panel */}
+      {/* ── Settings panel (overlay, does not affect scroll) ──── */}
       <SettingsPanel
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}

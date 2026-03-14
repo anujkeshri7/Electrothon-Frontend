@@ -97,7 +97,7 @@ export const SETTINGS_SECTIONS = [
       { id: "edit_profile", label: "Edit Profile", icon: "✏️", action: "edit" },
       { id: "change_email", label: "Change Email", icon: "📧", action: "navigate" },
       { id: "change_password", label: "Change Password", icon: "🔑", action: "navigate" },
-      { id: "reverify", label: "Re-verify College ID", icon: "🎓", action: "navigate" },
+     
     ],
   },
   {
