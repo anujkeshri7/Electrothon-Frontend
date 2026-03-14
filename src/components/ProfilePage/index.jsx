@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import ProfileHeader from "./helpers/ProfileHeader";
 import {
   AboutSection,
@@ -9,6 +10,7 @@ import {
 import ActivityFeed from "./helpers/ActivityFeed";
 import SettingsPanel from "./helpers/SettingsPanel";
 import { DUMMY_USER } from "./helpers/constants";
+import axios from "axios";
 
 // ─── Card wrapper used throughout ────────────────────────────────────────────
 function Card({ children, className = "" }) {
@@ -30,11 +32,78 @@ function Card({ children, className = "" }) {
 
 export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [user] = useState(DUMMY_USER);
+
+  const [isOwnProfile,setIsOwnProfile] = useState(false)
+
+  const [postsCount, setPostsCount] = useState(0);
+
+
+  
+ 
+ 
 
   const handleEditProfile = () => {
     alert("Redirecting to Edit Profile...");
   };
+
+   const [user, setuser] = useState(null);
+ 
+
+   
+
+  const fetchStudentData = async () => {
+    try {
+
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/profile/me`, { withCredentials: true });
+      if (res.data.success) {
+        const studentData = res.data.student;
+        console.log("Fetched student data:", studentData);  
+        setuser(studentData);
+
+        const resposne = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/check-auth`, { withCredentials: true });
+        if (resposne.data.success) {
+           if(resposne.data.student.email === studentData.email){
+            setIsOwnProfile(true);
+            setuser((prev)=> ({ ...prev, isOwnProfile: true }));
+           }
+
+        }
+       
+      }else{
+        console.log("Failed to fetch student data:", res.data.message);
+      }
+      
+    } catch (error) {
+      console.log("Error fetching student data:", error.response?.data?.message || error.message);
+      
+    }
+
+  }
+
+  useEffect(() => {fetchStudentData()}, []);
+
+  
+ const fetchPosts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "")}/api/post/fetch-my-posts`,
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        setPosts(res.data.posts);
+      } else {
+        setError("Failed to load posts.");
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || "Could not load posts.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPosts(); }, []);
 
   return (
     /*
@@ -100,6 +169,8 @@ export default function ProfilePage() {
             user={user}
             onSettingsOpen={() => setSettingsOpen(true)}
             onEditProfile={handleEditProfile}
+            postsCount={postsCount}
+
           />
         </Card>
 
@@ -126,7 +197,9 @@ export default function ProfilePage() {
 
             {/* Activity feed */}
             <Card className="p-5">
-              <ActivityFeed />
+              <ActivityFeed 
+              setPostsCount={setPostsCount}
+              />
             </Card>
 
           </div>
