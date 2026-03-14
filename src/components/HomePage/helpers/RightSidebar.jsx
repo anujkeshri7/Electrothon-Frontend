@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Bot, Send, TrendingUp, Calendar, Flame, ChevronRight } from "lucide-react";
+import { UserPlus, Bot, Send, TrendingUp, Calendar, Flame, ChevronRight, Cpu } from "lucide-react";
 import { SUGGESTED_PEOPLE, TRENDING_TAGS, UPCOMING_EVENTS } from "./constants";
 
 function SectionCard({ title, icon: Icon, children, action }) {
@@ -91,60 +91,69 @@ export default function RightSidebar() {
       </SectionCard>
 
 {/* AI Campus Assistant */}
-<SectionCard title="AI Campus Assistant" icon={Bot}>
-  <div className="flex flex-col h-[260px] justify-between">
-
-    {/* Chat messages */}
-    <div className="space-y-3 overflow-y-auto pr-1">
-
-      {/* AI message */}
-      <div className="flex items-start gap-2">
-        <div className="p-1.5 rounded-md bg-indigo-500/20">
-          <Bot size={14} className="text-indigo-400" />
+    <button
+      onClick={() => navigate("/opportunity")}
+      style={{
+        width: "100%",
+        padding: "18px 24px",
+        borderRadius: 18,
+        background: "#16161e",
+        border: "1px solid #2a2a3a",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        cursor: "pointer",
+        position: "relative",
+        overflow: "hidden",
+        transition: "border-color .2s, transform .15s",
+        fontFamily: "'Sora', sans-serif",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#6366f1";
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#2a2a3a";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      {/* Subtle glow */}
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        background: "radial-gradient(ellipse 60% 80% at 20% 50%, rgba(99,102,241,0.07), transparent)",
+      }} />
+ 
+      {/* Orb */}
+      <div style={{
+        width: 46, height: 46, borderRadius: 14, flexShrink: 0,
+        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Bot size={22} color="#fff" />
+      </div>
+ 
+      {/* Text */}
+      <div style={{ flex: 1, textAlign: "left" }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#e4e4f0", letterSpacing: ".2px" }}>
+          Your AI Opportunity Radar
         </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-300 max-w-[85%]">
-          Hey 👋 I’m your campus AI assistant.  
-          Ask me about hackathons, placements, or tech fests.
+        <div style={{ fontSize: 12, color: "#555578", marginTop: 3 }}>
+          Hackathons · Internships · Events — curated just for you
         </div>
       </div>
-
-      {/* User message */}
-      <div className="flex justify-end">
-        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2 text-xs text-zinc-200 max-w-[80%]">
-          Any upcoming hackathons in NITs?
-        </div>
-      </div>
-
-      {/* AI reply */}
-      <div className="flex items-start gap-2">
-        <div className="p-1.5 rounded-md bg-indigo-500/20">
-          <Bot size={14} className="text-indigo-400" />
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-300 max-w-[85%]">
-          Yes! NIT Surathkal hosting a hackathon next week 🚀
-        </div>
-      </div>
-
-    </div>
-
-    {/* Input box */}
-    <div className="mt-3 flex items-center gap-2 border border-zinc-800 rounded-lg px-2 py-1.5 bg-black/40">
-
-      <input
-        type="text"
-        placeholder="Ask AI about events, skills, placements..."
-        className="flex-1 bg-transparent text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none"
-      />
-
-      <button className="p-1.5 rounded-md bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors">
-        <Send size={14} className="text-indigo-400" />
-      </button>
-
-    </div>
-  </div>
-</SectionCard>
+ 
+      {/* AI Badge */}
+      <span style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: ".5px",
+        background: "rgba(99,102,241,.15)", color: "#818cf8",
+        border: "1px solid rgba(99,102,241,.25)",
+        borderRadius: 6, padding: "3px 8px",
+      }}>
+        AI
+      </span>
+ 
+      <ChevronRight size={16} color="#3d3d5c" />
+    </button>
 
       {/* Upcoming events */}
       <SectionCard title="Upcoming events" icon={Calendar} action="See all">
