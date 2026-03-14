@@ -1,298 +1,446 @@
 import { useState, useRef } from "react";
-import {
-  Pencil, HelpCircle, Zap,
-  Image, BarChart2, Smile, Link2,
-  Send, X,
-} from "lucide-react";
+import { Image, Send, X, Plus, Tag, Type } from "lucide-react";
 import { CURRENT_USER } from "./constants";
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+const MAX_IMAGES = 10;
+const MAX_CHARS  = 500;
 
-const POST_TYPES = [
-  { id: "post",     icon: Pencil,      label: "Post",     placeholder: "Share something with your campus..." },
-  { id: "question", icon: HelpCircle,  label: "Question", placeholder: "Ask the campus something..."         },
-  { id: "project",  icon: Zap,         label: "Project",  placeholder: "Share what you're building..."       },
-];
+export const POST_STORE = [];
 
-const MOODS = ["🎉 Celebrating", "💡 Learning", "🤔 Seeking help", "🔥 Excited", "😓 Struggling"];
+// ─── Image preview grid ───────────────────────────────────────────────────────
+function ImagePreviewGrid({ images, onRemove }) {
+  const count = images.length;
+  if (!count) return null;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+  // Single image: wide strip. 2+: fixed small thumbnails in a wrapping row.
+  if (count === 1) {
+    return (
+      <div className="mt-3 rounded-xl overflow-hidden relative group" style={{ height: 180 }}>
+        <img
+          src={images[0].preview}
+          alt=""
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
+        <button
+          onClick={() => onRemove(0)}
+          className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full flex items-center justify-center border border-white/20 transition-colors duration-150"
+          style={{ background: "rgba(0,0,0,0.65)" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.85)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.65)"; }}
+        >
+          <X size={10} color="#fff" />
+        </button>
+      </div>
+    );
+  }
 
-export default function CreatePost() {
-  const [active,   setActive]   = useState(false);
-  const [type,     setType]     = useState("post");
-  const [content,  setContent]  = useState("");
-  const [image,    setImage]    = useState(null);
-  const [pollOpen, setPollOpen] = useState(false);
-  const [moodOpen, setMoodOpen] = useState(false);
-  const [moods,    setMoods]    = useState([]);
-  const [pollOpts, setPollOpts] = useState(["", ""]);
-  const [toast,    setToast]    = useState(false);
+  return (
+    <div className="mt-3 flex flex-wrap gap-1.5">
+      {images.map((img, i) => {
+        const isOverflow = i === 3 && count > 4;
+        if (i > 3) return null;
+        return (
+          <div
+            key={i}
+            className="relative rounded-xl overflow-hidden group flex-shrink-0"
+            style={{ width: 80, height: 80 }}
+          >
+            <img
+              src={img.preview}
+              alt=""
+              className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-[1.06]"
+            />
 
-  const fileRef = useRef(null);
-  const current = POST_TYPES.find((t) => t.id === type);
-  const canPost = content.trim() || image;
+            {/* +N overlay on 4th tile */}
+            {isOverflow && (
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[2px]"
+                style={{ background: "rgba(7,7,17,0.68)" }}
+              >
+                <span className="text-white text-base font-bold" style={{ fontFamily: "var(--font-display)" }}>
+                  +{count - 3}
+                </span>
+              </div>
+            )}
 
-  // ── helpers ────────────────────────────────────────────────────────────────
+            {/* Remove — visible on hover */}
+            {!isOverflow && (
+              <button
+                onClick={() => onRemove(i)}
+                className="absolute top-1 right-1 z-20 w-5 h-5 rounded-full flex items-center justify-center border border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-150"
+                style={{ background: "rgba(0,0,0,0.7)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.85)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.7)"; }}
+              >
+                <X size={9} color="#fff" />
+              </button>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(false), 2500);
+// ─── Toolbar button ───────────────────────────────────────────────────────────
+function ToolBtn({ children, onClick, title, active }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-150"
+      style={{
+        background: active ? "rgba(99,102,241,0.15)" : "transparent",
+        border: active ? "1px solid rgba(99,102,241,0.3)" : "1px solid transparent",
+        color: active ? "#818cf8" : "rgba(255,255,255,0.28)",
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+          e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "rgba(255,255,255,0.28)";
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Tag input ────────────────────────────────────────────────────────────────
+function TagInput({ tags, setTags }) {
+  const [input, setInput] = useState("");
+
+  const addTag = (raw) => {
+    const val = raw.trim().replace(/^#+/, "");
+    if (!val || tags.includes("#" + val) || tags.length >= 8) return;
+    setTags((t) => [...t, "#" + val]);
+    setInput("");
   };
 
+  const onKeyDown = (e) => {
+    if (["Enter", ",", " "].includes(e.key)) { e.preventDefault(); addTag(input); }
+    if (e.key === "Backspace" && !input && tags.length > 0)
+      setTags((t) => t.slice(0, -1));
+  };
+
+  return (
+    <div
+      className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl mt-2.5 transition-colors duration-200"
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+      onFocusCapture={(e) => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.3)"; }}
+      onBlurCapture={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; }}
+    >
+      <Tag size={13} color="rgba(255,255,255,0.22)" className="flex-shrink-0" />
+
+      {tags.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+          style={{
+            background: "rgba(99,102,241,0.14)",
+            border: "1px solid rgba(99,102,241,0.28)",
+            color: "#a5b4fc",
+            fontFamily: "var(--font-body)",
+          }}
+        >
+          {tag}
+          <button
+            onClick={() => setTags((t) => t.filter((x) => x !== tag))}
+            className="bg-transparent border-none cursor-pointer p-0 leading-none"
+          >
+            <X size={10} color="#818cf8" />
+          </button>
+        </span>
+      ))}
+
+      {tags.length < 8 && (
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          onBlur={() => addTag(input)}
+          placeholder={tags.length === 0 ? "Add tags… (Enter to confirm)" : "+ tag"}
+          className="flex-1 min-w-[80px] bg-transparent border-none outline-none text-xs"
+          style={{ color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-body)", caretColor: "#6366f1" }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+export default function CreatePost() {
+  const [active,  setActive]  = useState(false);
+  const [title,   setTitle]   = useState("");
+  const [content, setContent] = useState("");
+  const [tags,    setTags]    = useState([]);
+  const [images,  setImages]  = useState([]);
+  const [toast,   setToast]   = useState(false);
+
+  const fileRef = useRef(null);
+  const canPost = content.trim() || images.length > 0;
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(false), 2500); };
+
   const reset = () => {
-    setContent(""); setImage(null); setActive(false);
-    setPollOpen(false); setMoodOpen(false);
-    setMoods([]); setPollOpts(["", ""]);
+    setTitle(""); setContent(""); setTags([]); setImages([]);
+    setActive(false);
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImage({ file, preview: URL.createObjectURL(file) });
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const remaining = MAX_IMAGES - images.length;
+    const added = files.slice(0, remaining).map((f) => ({
+      file: f, preview: URL.createObjectURL(f),
+      name: f.name, size: f.size, mimeType: f.type,
+    }));
+    setImages((p) => [...p, ...added]);
+    e.target.value = "";
   };
 
-  const toggleMood = (m) =>
-    setMoods((prev) => prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]);
-
-  const addPollOpt = () => {
-    if (pollOpts.length >= 4) return;
-    setPollOpts([...pollOpts, ""]);
-  };
-
-  const handleLink = () => {
-    const url = prompt("Paste a link:");
-    if (url?.trim()) {
-      setContent((c) => c + (c ? " " : "") + url.trim());
-      showToast("Link added!");
-    }
+  const removeImage = (i) => {
+    setImages((prev) => {
+      const next = [...prev];
+      URL.revokeObjectURL(next[i].preview);
+      next.splice(i, 1);
+      return next;
+    });
   };
 
   const handlePost = () => {
     if (!canPost) return;
-    const post = {
-      id: Date.now(), type, content, image,
-      moods, poll: pollOpen ? pollOpts.filter(Boolean) : null,
-      author: CURRENT_USER, createdAt: new Date(),
-    };
-    console.log("POST CREATED:", post);
-    showToast("Posted successfully! 🎉");
-    setTimeout(reset, 600);
-  };
 
-  // ── render ─────────────────────────────────────────────────────────────────
+    const post = {
+      id:        Date.now(),
+      title:     title.trim() || null,
+      content:   content.trim(),
+      tags,
+      images:    images.map((img, i) => ({
+        index:    i,
+        name:     img.name,
+        size:     img.size,
+        mimeType: img.mimeType,
+        preview:  img.preview,
+      })),
+      author:    { ...CURRENT_USER },
+      meta:      { likes: 0, comments: 0, shares: 0, saved: false },
+      createdAt: new Date().toISOString(),
+    };
+
+    POST_STORE.unshift(post);
+
+    console.group(`📝 New Post  ·  ${new Date().toLocaleTimeString()}`);
+    console.log("Post JSON:\n", JSON.stringify(post, null, 2));
+    console.log(`POST_STORE (${POST_STORE.length} total):\n`, JSON.stringify(POST_STORE, null, 2));
+    console.groupEnd();
+
+    showToast("Posted successfully! 🎉");
+    setTimeout(reset, 500);
+  };
 
   return (
     <>
-      {/* ── Card ─────────────────────────────────────────────────────────── */}
+      <style>{`
+        @keyframes expandIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .cp-expanded { animation: expandIn 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+      `}</style>
+
       <div
+        className="rounded-2xl p-[18px] transition-all duration-300 backdrop-blur-xl"
         style={{
-          fontFamily: "'Sora', sans-serif",
-          background: "#16161e",
-          border: active ? "1px solid #6366f1" : "1px solid #252530",
-          borderRadius: 20,
-          padding: 20,
-          transition: "border-color 0.25s, box-shadow 0.25s",
-          boxShadow: active
-            ? "0 0 0 1px rgba(99,102,241,0.15), 0 8px 40px rgba(0,0,0,0.5)"
-            : "none",
+          background: "rgba(255,255,255,0.026)",
+          border: active ? "1px solid rgba(99,102,241,0.38)" : "1px solid rgba(255,255,255,0.075)",
+          boxShadow: active ? "0 0 0 1px rgba(99,102,241,0.08), 0 8px 40px rgba(0,0,0,0.42)" : "none",
         }}
       >
-        {/* ── Top row ────────────────────────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+        {/* ── Top row ──────────────────────────────────────────────────── */}
+        <div className="flex items-start gap-3">
+
           {/* Avatar */}
-          <div style={{
-            width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-            background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 600, color: "#fff", letterSpacing: "0.5px",
-          }}>
-            {CURRENT_USER.initials}
+          <div
+            className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-[13px] font-bold text-white"
+            style={{
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              fontFamily: "var(--font-display)",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {CURRENT_USER?.initials ?? "U"}
           </div>
 
-          {/* Input shell */}
+          {/* Input area */}
           <div
             onClick={() => setActive(true)}
+            className="flex-1 rounded-[14px] transition-colors duration-200 cursor-pointer"
             style={{
-              flex: 1, background: "#1c1c28",
-              border: "1px solid #252530", borderRadius: 14,
-              padding: "12px 16px", cursor: "text",
+              background: "rgba(255,255,255,0.035)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              padding: active ? "10px 14px 8px" : "11px 16px",
+              cursor: active ? "default" : "pointer",
             }}
           >
             {!active ? (
-              <span style={{ fontSize: 14, color: "#4a4a62" }}>
-                {current.placeholder}
+              <span className="text-sm" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-body)" }}>
+                What's on your mind?
               </span>
             ) : (
-              <textarea
-                autoFocus rows={3} value={content}
-                onChange={(e) => {
-                  if (e.target.value.length <= 500) setContent(e.target.value);
-                }}
-                placeholder={current.placeholder}
-                style={{
-                  width: "100%", background: "transparent", border: "none",
-                  outline: "none", resize: "none", fontSize: 14,
-                  color: "#e4e4f0", fontFamily: "'Sora', sans-serif", lineHeight: 1.6,
-                }}
-              />
+              <div className="cp-expanded">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Post title  (optional)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-[15px] font-semibold pb-2 mb-2.5"
+                  style={{
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    color: "rgba(255,255,255,0.92)",
+                    fontFamily: "var(--font-display)",
+                    caretColor: "#6366f1",
+                    letterSpacing: "0.01em",
+                  }}
+                />
+                <textarea
+                  rows={3}
+                  placeholder="Share something with your campus…"
+                  value={content}
+                  onChange={(e) => {
+                    if (e.target.value.length <= MAX_CHARS) setContent(e.target.value);
+                  }}
+                  className="w-full bg-transparent border-none outline-none resize-none text-[13px] leading-7"
+                  style={{
+                    color: "rgba(255,255,255,0.78)",
+                    fontFamily: "var(--font-body)",
+                    caretColor: "#6366f1",
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>
 
-        {/* ── Image preview ───────────────────────────────────────────────── */}
-        {image && (
-          <div style={{ marginTop: 14, borderRadius: 14, overflow: "hidden", position: "relative" }}>
-            <img src={image.preview} alt="preview"
-              style={{ width: "100%", maxHeight: 240, objectFit: "cover", display: "block" }} />
-            <button onClick={() => setImage(null)} style={{
-              position: "absolute", top: 10, right: 10,
-              width: 28, height: 28, borderRadius: 8,
-              background: "rgba(0,0,0,0.65)", border: "1px solid rgba(255,255,255,0.08)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", color: "#ccc",
-            }}>
-              <X size={12} />
-            </button>
-          </div>
-        )}
-
-        {/* ── Poll block ──────────────────────────────────────────────────── */}
-        {pollOpen && (
-          <div style={{
-            marginTop: 14, background: "#121218",
-            border: "1px solid #1e1e2a", borderRadius: 14, padding: 14,
-          }}>
-            <p style={{ fontSize: 11, color: "#555570", fontWeight: 500, marginBottom: 10,
-              textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Poll options
-            </p>
-            {pollOpts.map((opt, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 10,
-                background: "#1a1a26", border: "1px solid #252530",
-                borderRadius: 10, padding: "10px 12px", marginBottom: 7,
-              }}>
-                <input
-                  value={opt}
-                  onChange={(e) => {
-                    const next = [...pollOpts];
-                    next[i] = e.target.value;
-                    setPollOpts(next);
-                  }}
-                  placeholder={`Option ${i + 1}`}
-                  style={{
-                    flex: 1, background: "transparent", border: "none", outline: "none",
-                    color: "#c0c0e0", fontFamily: "'Sora', sans-serif", fontSize: 13,
-                  }}
-                />
-              </div>
-            ))}
-            {pollOpts.length < 4 && (
-              <button onClick={addPollOpt}
-                style={{ fontSize: 12, color: "#6366f1", background: "none",
-                  border: "none", cursor: "pointer", fontFamily: "'Sora', sans-serif",
-                  fontWeight: 500, padding: 0 }}>
-                + Add option
+        {/* ── Image preview ─────────────────────────────────────────────── */}
+        {images.length > 0 && (
+          <div>
+            <ImagePreviewGrid images={images} onRemove={removeImage} />
+            {images.length < MAX_IMAGES && (
+              <button
+                onClick={() => fileRef.current.click()}
+                className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-[10px] text-[11px] font-medium cursor-pointer transition-all duration-150"
+                style={{
+                  background: "rgba(99,102,241,0.1)",
+                  border: "1px dashed rgba(99,102,241,0.3)",
+                  color: "#818cf8",
+                  fontFamily: "var(--font-body)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(99,102,241,0.18)";
+                  e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(99,102,241,0.1)";
+                  e.currentTarget.style.borderColor = "rgba(99,102,241,0.3)";
+                }}
+              >
+                <Plus size={12} />
+                Add more · {images.length}/{MAX_IMAGES}
               </button>
             )}
           </div>
         )}
 
-        {/* ── Mood tags ───────────────────────────────────────────────────── */}
-        {moodOpen && (
-          <div style={{ display: "flex", gap: 6, marginTop: 14, flexWrap: "wrap" }}>
-            {MOODS.map((m) => (
-              <span key={m} onClick={() => toggleMood(m)} style={{
-                padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 500,
-                border: moods.includes(m) ? "1px solid rgba(99,102,241,0.45)" : "1px solid #252530",
-                background: moods.includes(m) ? "rgba(99,102,241,0.12)" : "#1a1a26",
-                color: moods.includes(m) ? "#a5b4fc" : "#555570",
-                cursor: "pointer",
-              }}>
-                {m}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* ── Expanded panel ──────────────────────────────────────────────── */}
+        {/* ── Expanded panel ────────────────────────────────────────────── */}
         {active && (
-          <div style={{ marginTop: 14 }}>
-            {/* Type tabs */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-              {POST_TYPES.map(({ id, icon: Icon, label }) => (
-                <button key={id} onClick={() => setType(id)} style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "7px 14px", borderRadius: 10, fontSize: 12, fontWeight: 500,
-                  border: type === id ? "1px solid rgba(99,102,241,0.5)" : "1px solid #252530",
-                  background: type === id ? "rgba(99,102,241,0.12)" : "#1c1c28",
-                  color: type === id ? "#a5b4fc" : "#555570",
-                  cursor: "pointer",
-                }}>
-                  <Icon size={12} />
-                  {label}
-                </button>
-              ))}
-            </div>
+          <div className="mt-3">
+            <TagInput tags={tags} setTags={setTags} />
 
-            {/* Divider */}
-            <div style={{ borderTop: "1px solid #1e1e2a", marginBottom: 14 }} />
+            <div className="border-t my-3" style={{ borderColor: "rgba(255,255,255,0.06)" }} />
 
             {/* Toolbar */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              {/* Hidden file input */}
-              <input type="file" accept="image/*" ref={fileRef}
-                style={{ display: "none" }} onChange={handleImageChange} />
+            <div className="flex items-center gap-0.5">
+              <input
+                type="file" accept="image/*" multiple
+                ref={fileRef} className="hidden"
+                onChange={handleImageChange}
+              />
 
-              {/* Image */}
-              <ToolBtn title="Photo" onClick={() => fileRef.current.click()}>
+              <ToolBtn
+                title={`Photos (${images.length}/${MAX_IMAGES})`}
+                active={images.length > 0}
+                onClick={() => fileRef.current.click()}
+              >
                 <Image size={16} />
               </ToolBtn>
 
-              {/* Poll */}
-              <ToolBtn title="Poll" active={pollOpen} onClick={() => setPollOpen((p) => !p)}>
-                <BarChart2 size={16} />
-              </ToolBtn>
+              {/* Counters */}
+              <div className="flex items-center gap-1.5 ml-1">
+                {images.length > 0 && (
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      color: images.length >= MAX_IMAGES ? "#f87171" : "#818cf8",
+                      background: images.length >= MAX_IMAGES ? "rgba(248,113,113,0.1)" : "rgba(99,102,241,0.12)",
+                      border: `1px solid ${images.length >= MAX_IMAGES ? "rgba(248,113,113,0.25)" : "rgba(99,102,241,0.25)"}`,
+                    }}
+                  >
+                    {images.length}/{MAX_IMAGES} photos
+                  </span>
+                )}
+                <span
+                  className="text-[11px]"
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    color: content.length > 450 ? "#f87171" : "rgba(255,255,255,0.18)",
+                  }}
+                >
+                  {content.length}/{MAX_CHARS}
+                </span>
+              </div>
 
-              {/* Mood */}
-              <ToolBtn title="Mood" active={moodOpen} onClick={() => setMoodOpen((m) => !m)}>
-                <Smile size={16} />
-              </ToolBtn>
-
-              {/* Link */}
-              <ToolBtn title="Link" onClick={handleLink}>
-                <Link2 size={16} />
-              </ToolBtn>
-
-              {/* Char count */}
-              <span style={{
-                fontSize: 11, marginLeft: 4,
-                color: content.length > 450 ? "#f87171" : "#444458",
-              }}>
-                {content.length}/500
-              </span>
-
-              {/* Actions */}
-              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-                <button onClick={reset} style={{
-                  padding: "8px 16px", borderRadius: 10, fontSize: 12, fontWeight: 500,
-                  background: "#1a1a26", border: "1px solid #252530",
-                  color: "#666688", cursor: "pointer",
-                }}>
+              {/* Cancel + Post */}
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={reset}
+                  className="px-3.5 py-1.5 rounded-[10px] text-xs font-medium cursor-pointer transition-colors duration-150"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "rgba(255,255,255,0.38)",
+                    fontFamily: "var(--font-body)",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.38)"; }}
+                >
                   Cancel
                 </button>
-                <button onClick={handlePost} disabled={!canPost} style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "8px 20px", borderRadius: 10, fontSize: 12, fontWeight: 600,
-                  background: canPost
-                    ? "linear-gradient(135deg,#6366f1,#8b5cf6)"
-                    : "#1e1e2e",
-                  border: "none",
-                  color: canPost ? "#fff" : "#444460",
-                  cursor: canPost ? "pointer" : "not-allowed",
-                  letterSpacing: "0.3px",
-                }}>
+                <button
+                  onClick={handlePost}
+                  disabled={!canPost}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-[10px] text-xs font-semibold transition-opacity duration-150"
+                  style={{
+                    background: canPost ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "rgba(255,255,255,0.05)",
+                    border: "none",
+                    color: canPost ? "#fff" : "rgba(255,255,255,0.2)",
+                    cursor: canPost ? "pointer" : "not-allowed",
+                    fontFamily: "var(--font-body)",
+                    boxShadow: canPost ? "0 4px 16px rgba(99,102,241,0.28)" : "none",
+                    letterSpacing: "0.3px",
+                  }}
+                  onMouseEnter={(e) => { if (canPost) e.currentTarget.style.opacity = "0.85"; }}
+                  onMouseLeave={(e) => { if (canPost) e.currentTarget.style.opacity = "1"; }}
+                >
                   <Send size={13} />
                   Post
                 </button>
@@ -301,19 +449,34 @@ export default function CreatePost() {
           </div>
         )}
 
-        {/* ── Quick actions (collapsed) ───────────────────────────────────── */}
+        {/* ── Collapsed quick row ───────────────────────────────────────── */}
         {!active && (
-          <div style={{ display: "flex", gap: 6, marginTop: 14,
-            paddingTop: 14, borderTop: "1px solid #1e1e2a" }}>
-            {POST_TYPES.map(({ id, icon: Icon, label }) => (
-              <button key={id}
-                onClick={() => { setActive(true); setType(id); }}
+          <div className="flex gap-1.5 mt-3.5 pt-3.5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+            {[
+              { icon: Type,  label: "Write", action: () => setActive(true) },
+              { icon: Image, label: "Photo", action: () => { setActive(true); setTimeout(() => fileRef.current?.click(), 80); } },
+            ].map(({ icon: Icon, label, action }) => (
+              <button
+                key={label}
+                onClick={action}
+                className="flex-1 py-2 rounded-[10px] text-[11px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-150"
                 style={{
-                  flex: 1, padding: 8, borderRadius: 10, fontSize: 11, fontWeight: 500,
-                  background: "#121218", border: "1px solid #1e1e2a",
-                  color: "#4a4a62", cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                }}>
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  color: "rgba(255,255,255,0.3)",
+                  fontFamily: "var(--font-body)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(99,102,241,0.08)";
+                  e.currentTarget.style.color = "#818cf8";
+                  e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.3)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                }}
+              >
                 <Icon size={12} />
                 {label}
               </button>
@@ -324,30 +487,19 @@ export default function CreatePost() {
 
       {/* ── Toast ──────────────────────────────────────────────────────────── */}
       {toast && (
-        <div style={{
-          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
-          background: "#22223a", border: "1px solid #6366f1", borderRadius: 12,
-          padding: "10px 20px", color: "#a5b4fc", fontSize: 13, fontWeight: 500,
-          zIndex: 99, whiteSpace: "nowrap",
-        }}>
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl text-[13px] font-medium z-[999] whitespace-nowrap backdrop-blur-xl"
+          style={{
+            background: "rgba(14,14,26,0.95)",
+            border: "1px solid rgba(99,102,241,0.38)",
+            color: "#a5b4fc",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+            fontFamily: "var(--font-body)",
+          }}
+        >
           {toast}
         </div>
       )}
     </>
-  );
-}
-
-// ── Reusable toolbar button ────────────────────────────────────────────────────
-function ToolBtn({ children, onClick, title, active }) {
-  return (
-    <button onClick={onClick} title={title} style={{
-      width: 34, height: 34, borderRadius: 10,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      background: active ? "rgba(99,102,241,0.15)" : "transparent",
-      border: "none", cursor: "pointer",
-      color: active ? "#818cf8" : "#555570",
-    }}>
-      {children}
-    </button>
   );
 }

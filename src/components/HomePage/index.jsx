@@ -6,7 +6,7 @@ import StoriesBar from "./helpers/StoriesBar";
 import CreatePost from "./helpers/CreatePost";
 import FeedPost from "./helpers/FeedPost";
 import { FEED_POSTS } from "./helpers/constants";
-import { PanelLeft, PanelLeftClose } from "lucide-react";
+import { PanelLeft, PanelLeftClose, Cpu, ChevronRight } from "lucide-react";
 
 const FEED_TABS = ["For you", "College", "Following", "Projects", "Questions"];
 
