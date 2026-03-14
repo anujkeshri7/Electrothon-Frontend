@@ -117,6 +117,9 @@ export const SUGGESTED_PEOPLE = [
   { id: "sp1", name: "Sneha Rao", initials: "SR", college: "IIT Madras", color: "#ec4899", role: "ML Research Intern @ Adobe", mutuals: 12 },
   { id: "sp2", name: "Ayush Gupta", initials: "AG", college: "IIT Madras", color: "#14b8a6", role: "2nd yr CSE · Open Source", mutuals: 8 },
   { id: "sp3", name: "Kavya Nair", initials: "KN", college: "NSUT", color: "#f59e0b", role: "CP Expert · Codeforces 2100+", mutuals: 5 },
+  { id: "sp4", name: "Manav Singh", initials: "MS", college: "IIT Roorkee", color: "#3b82f6", role: "Founder @ HackHive", mutuals: 9 },
+  { id: "sp5", name: "Isha Verma", initials: "IV", college: "IIT Delhi", color: "#f97316", role: "3rd yr CSE · Placement Season", mutuals: 15 },
+  { id: "sp6", name: "Rishi Malhotra", initials: "RM", college: "IIT Bombay", color: "#8b5cf6", role: "SDE Intern @ Amazon", mutuals: 7 },
 ];
 
 export const TRENDING_TAGS = [

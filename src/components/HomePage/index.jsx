@@ -7,6 +7,7 @@ import CreatePost from "./helpers/CreatePost";
 import FeedPost from "./helpers/FeedPost";
 import { FEED_POSTS } from "./helpers/constants";
 import { PanelLeft, PanelLeftClose, Cpu, ChevronRight } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 const FEED_TABS = ["For you", "College", "Following", "Projects", "Questions"];
 
@@ -33,7 +34,7 @@ export default function HomePage() {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  const handleProfileClick = () => alert("Redirecting to Profile...");
+  const handleProfileClick = () => Navigate("/profile");
 
   return (
     <div className="min-h-screen" style={{ background: "#070711" }}>

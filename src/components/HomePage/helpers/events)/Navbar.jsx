@@ -9,7 +9,7 @@ export default function Navbar({ onProfileClick }) {
 
   const NOTIFS = [
     { id: 1, text: "Priya Mehta connected with you", time: "2m", unread: true, color: "#3b82f6" },
-    { id: 2, text: "Your post got 50 likes 🎉", time: "1h", unread: true, color: "#f97316" },
+    { id: 2, text: "Your post got 50 likes ", time: "1h", unread: true, color: "#f97316" },
     { id: 3, text: "Rohan commented on your post", time: "3h", unread: false, color: "#8b5cf6" },
     { id: 4, text: "New hackathon in your college area", time: "5h", unread: false, color: "#10b981" },
   ];
