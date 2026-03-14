@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, TrendingUp, Calendar, Flame, ChevronRight } from "lucide-react";
+import { UserPlus, Bot, Send, TrendingUp, Calendar, Flame, ChevronRight } from "lucide-react";
 import { SUGGESTED_PEOPLE, TRENDING_TAGS, UPCOMING_EVENTS } from "./constants";
 
 function SectionCard({ title, icon: Icon, children, action }) {
@@ -90,43 +90,61 @@ export default function RightSidebar() {
         </div>
       </SectionCard>
 
-      {/* Trending tags */}
-      <SectionCard title="Trending on campus" icon={TrendingUp}>
-        <div className="space-y-2">
-          {TRENDING_TAGS.map((t, i) => (
-            <button
-              key={t.tag}
-              className="w-full flex items-center justify-between group"
-              style={{ background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="text-xs w-4 text-center"
-                  style={{ color: "rgba(255,255,255,0.2)", fontFamily: "var(--font-display)", fontWeight: 700 }}
-                >
-                  {i + 1}
-                </span>
-                <div>
-                  <div
-                    className="text-xs font-semibold group-hover:text-indigo-400 transition-colors"
-                    style={{ color: "rgba(255,255,255,0.75)", fontFamily: "var(--font-body)" }}
-                  >
-                    {t.tag}
-                    {t.hot && <Flame size={10} className="inline ml-1" style={{ color: "#f97316" }} />}
-                  </div>
-                  <div
-                    className="text-[10px]"
-                    style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}
-                  >
-                    {t.posts}
-                  </div>
-                </div>
-              </div>
-              <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#6366f1" }} />
-            </button>
-          ))}
+{/* AI Campus Assistant */}
+<SectionCard title="AI Campus Assistant" icon={Bot}>
+  <div className="flex flex-col h-[260px] justify-between">
+
+    {/* Chat messages */}
+    <div className="space-y-3 overflow-y-auto pr-1">
+
+      {/* AI message */}
+      <div className="flex items-start gap-2">
+        <div className="p-1.5 rounded-md bg-indigo-500/20">
+          <Bot size={14} className="text-indigo-400" />
         </div>
-      </SectionCard>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-300 max-w-[85%]">
+          Hey 👋 I’m your campus AI assistant.  
+          Ask me about hackathons, placements, or tech fests.
+        </div>
+      </div>
+
+      {/* User message */}
+      <div className="flex justify-end">
+        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg px-3 py-2 text-xs text-zinc-200 max-w-[80%]">
+          Any upcoming hackathons in NITs?
+        </div>
+      </div>
+
+      {/* AI reply */}
+      <div className="flex items-start gap-2">
+        <div className="p-1.5 rounded-md bg-indigo-500/20">
+          <Bot size={14} className="text-indigo-400" />
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-300 max-w-[85%]">
+          Yes! NIT Surathkal hosting a hackathon next week 🚀
+        </div>
+      </div>
+
+    </div>
+
+    {/* Input box */}
+    <div className="mt-3 flex items-center gap-2 border border-zinc-800 rounded-lg px-2 py-1.5 bg-black/40">
+
+      <input
+        type="text"
+        placeholder="Ask AI about events, skills, placements..."
+        className="flex-1 bg-transparent text-xs text-zinc-300 placeholder-zinc-500 focus:outline-none"
+      />
+
+      <button className="p-1.5 rounded-md bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors">
+        <Send size={14} className="text-indigo-400" />
+      </button>
+
+    </div>
+  </div>
+</SectionCard>
 
       {/* Upcoming events */}
       <SectionCard title="Upcoming events" icon={Calendar} action="See all">
