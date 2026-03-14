@@ -7,8 +7,9 @@ import HomePage from './pages/HomePage'
 import RegistrationPage from './pages/Registration'
 import CompleteProfilePage from './pages/CompleteProfilePage.jsx'
 import ProfilePage from './pages/ProfilePage'
-import ExplorePage from './pages/ExplorePage.jsx'
 import CommunityPage from './pages/CommunityPage.jsx'
+import SignInPage from './components/signin/index.jsx'
+import SignIn from './components/signin/index.jsx'
 
 
 
@@ -17,8 +18,7 @@ const router = createBrowserRouter([
     children: [ 
       {path: '/', element: <HomePage/>},
       {path: '/signup', element: <RegistrationPage/>},
-      {path: '/login', element: <h1>Login Page</h1>},
-      {path: '/explore', element: <ExplorePage/>},
+      {path: '/login', element:<SignIn/>},
       {path: '/communities', element:<CommunityPage/> },
       {path: '/complete-profile', element: <CompleteProfilePage/>},
       {path: '/profile', element: <ProfilePage/>}
