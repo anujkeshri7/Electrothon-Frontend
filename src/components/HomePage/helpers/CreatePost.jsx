@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { Image, Send, X, Plus, Tag, Type } from "lucide-react";
 import { CURRENT_USER } from "./constants";
+import axios from "axios";
 
 const MAX_IMAGES = 10;
 const MAX_CHARS = 500;
@@ -199,22 +200,22 @@ export default function CreatePost() {
       formData.append("images[]", img.file);
     });
 
-    // console.group("📦 FormData Payload");
-    // for (let pair of formData.entries()) {
-    //   console.log(pair[0], pair[1]);
-    // }
-    // console.groupEnd();
+   
 
     try {
-      console.log("🚀 Simulating API call...");
+      
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/post/add`, formData, {
+        withCredentials: true,
+      })
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log("✅ Post uploaded");
-
-      showToast("Posted successfully! 🎉");
-
-      setTimeout(reset, 500);
+      if(res.data.success){
+        console.log("✅ Post uploaded");
+        showToast("Posted successfully!");
+        setTimeout(reset, 500);
+      }else{
+        console.error("❌ Upload failed", res.data.message);
+        showToast("Post failed");
+      }
 
     } catch (err) {
       console.error("❌ Upload failed", err);

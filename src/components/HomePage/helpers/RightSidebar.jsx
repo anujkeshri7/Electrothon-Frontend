@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { UserPlus, Bot, Send, TrendingUp, Calendar, Flame, ChevronRight, Cpu } from "lucide-react";
-import { SUGGESTED_PEOPLE, TRENDING_TAGS, UPCOMING_EVENTS } from "./constants";
+import { UserPlus, Bot, ChevronRight } from "lucide-react";
+import { SUGGESTED_PEOPLE } from "./constants";
+import { useNavigate } from "react-router-dom";
 
 function SectionCard({ title, icon: Icon, children, action }) {
+
   return (
     <div
       className="rounded-2xl p-4"
@@ -35,6 +37,8 @@ function SectionCard({ title, icon: Icon, children, action }) {
 
 export default function RightSidebar() {
   const [connected, setConnected] = useState({});
+  
+  const navigate = useNavigate();
 
   return (
     <aside className="flex flex-col gap-3 sticky top-[72px]">
@@ -44,7 +48,6 @@ export default function RightSidebar() {
         <div className="space-y-3">
           {SUGGESTED_PEOPLE.map((p) => (
             <div key={p.id} className="flex items-center gap-2.5">
-              {/* Avatar */}
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
                 style={{
@@ -56,22 +59,14 @@ export default function RightSidebar() {
               >
                 {p.initials}
               </div>
-              {/* Info */}
               <div className="flex-1 min-w-0">
-                <div
-                  className="text-xs font-semibold truncate"
-                  style={{ color: "rgba(255,255,255,0.85)", fontFamily: "var(--font-display)" }}
-                >
+                <div className="text-xs font-semibold truncate" style={{ color: "rgba(255,255,255,0.85)", fontFamily: "var(--font-display)" }}>
                   {p.name}
                 </div>
-                <div
-                  className="text-[10px] truncate"
-                  style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)" }}
-                >
+                <div className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)" }}>
                   {p.mutuals} mutual connections
                 </div>
               </div>
-              {/* Connect button */}
               <button
                 onClick={() => setConnected((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
                 className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200"
@@ -90,130 +85,60 @@ export default function RightSidebar() {
         </div>
       </SectionCard>
 
-{/* AI Campus Assistant */}
-    <button
-      onClick={() => navigate("/opportunity")}
-      style={{
-        width: "100%",
-        padding: "18px 24px",
-        borderRadius: 18,
-        background: "#16161e",
-        border: "1px solid #2a2a3a",
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        cursor: "pointer",
-        position: "relative",
-        overflow: "hidden",
-        transition: "border-color .2s, transform .15s",
-        fontFamily: "'Sora', sans-serif",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "#6366f1";
-        e.currentTarget.style.transform = "translateY(-1px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "#2a2a3a";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-    >
-      {/* Subtle glow */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 60% 80% at 20% 50%, rgba(99,102,241,0.07), transparent)",
-      }} />
- 
-      {/* Orb */}
-      <div style={{
-        width: 46, height: 46, borderRadius: 14, flexShrink: 0,
-        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Bot size={22} color="#fff" />
-      </div>
- 
-      {/* Text */}
-      <div style={{ flex: 1, textAlign: "left" }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "#e4e4f0", letterSpacing: ".2px" }}>
-          Your AI Opportunity Radar
-        </div>
-        <div style={{ fontSize: 12, color: "#555578", marginTop: 3 }}>
-          Hackathons · Internships · Events — curated just for you
-        </div>
-      </div>
- 
-      {/* AI Badge */}
-      <span style={{
-        fontSize: 10, fontWeight: 600, letterSpacing: ".5px",
-        background: "rgba(99,102,241,.15)", color: "#818cf8",
-        border: "1px solid rgba(99,102,241,.25)",
-        borderRadius: 6, padding: "3px 8px",
-      }}>
-        AI
-      </span>
- 
-      <ChevronRight size={16} color="#3d3d5c" />
-    </button>
+      {/* AI Opportunity Radar */}
+      <button
+        onClick={() => navigate("/ai-recommendations")}
+        style={{
+          width: "100%",
+          padding: "18px 20px",
+          borderRadius: "18px",
+          background: "#16161e",
+          border: "1px solid #2a2a3a",
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+          cursor: "pointer",
+          position: "relative",
+          overflow: "hidden",
+          transition: "border-color .2s, transform .15s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "#6366f1";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "#2a2a3a";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        {/* Glow */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 60% 80% at 20% 50%, rgba(99,102,241,0.07), transparent)" }} />
 
-      {/* Upcoming events */}
-      <SectionCard title="Upcoming events" icon={Calendar} action="See all">
-        <div className="space-y-2.5">
-          {UPCOMING_EVENTS.map((e) => (
-            <button
-              key={e.id}
-              className="w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all duration-200 group"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(ev) => { ev.currentTarget.style.background = "rgba(255,255,255,0.07)"; ev.currentTarget.style.borderColor = e.color + "30"; }}
-              onMouseLeave={(ev) => { ev.currentTarget.style.background = "rgba(255,255,255,0.03)"; ev.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
-            >
-              {/* Date badge */}
-              <div
-                className="w-10 h-10 rounded-lg flex flex-col items-center justify-center flex-shrink-0"
-                style={{ background: e.color + "18", border: `1px solid ${e.color}30` }}
-              >
-                <span className="text-[9px] font-bold uppercase" style={{ color: e.color, fontFamily: "var(--font-display)", lineHeight: 1 }}>
-                  {e.date.split(" ")[0]}
-                </span>
-                <span className="text-[11px] font-bold" style={{ color: e.color, fontFamily: "var(--font-display)" }}>
-                  {e.date.split(" ")[1]}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div
-                  className="text-xs font-semibold truncate"
-                  style={{ color: "rgba(255,255,255,0.85)", fontFamily: "var(--font-display)" }}
-                >
-                  {e.name}
-                </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span
-                    className="text-[10px] px-1.5 py-0.5 rounded-full"
-                    style={{ background: e.color + "15", color: e.color, fontFamily: "var(--font-body)", fontSize: "9px" }}
-                  >
-                    {e.type}
-                  </span>
-                  <span
-                    className="text-[10px]"
-                    style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}
-                  >
-                    {e.going} going
-                  </span>
-                </div>
-              </div>
-            </button>
-          ))}
+        {/* Icon orb */}
+        <div style={{ width: 44, height: 44, borderRadius: "13px", flexShrink: 0, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Bot size={21} color="#fff" />
         </div>
-      </SectionCard>
+
+        {/* Text */}
+        <div style={{ flex: 1, textAlign: "left" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4f0", letterSpacing: ".2px", fontFamily: "var(--font-display)" }}>
+            Your AI Opportunity Radar
+          </div>
+          <div style={{ fontSize: "11px", color: "#555578", marginTop: "3px", fontFamily: "var(--font-body)" }}>
+            Hackathons · Internships · Events
+          </div>
+        </div>
+
+        {/* AI badge */}
+        <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: ".5px", background: "rgba(99,102,241,.15)", color: "#818cf8", border: "1px solid rgba(99,102,241,.25)", borderRadius: "6px", padding: "3px 8px", flexShrink: 0 }}>
+          AI
+        </span>
+
+        <ChevronRight size={15} color="#3d3d5c" style={{ flexShrink: 0 }} />
+      </button>
 
       {/* Footer */}
-      <p
-        className="text-center text-[10px] px-2 pb-2 leading-relaxed"
-        style={{ color: "rgba(255,255,255,0.15)", fontFamily: "var(--font-body)" }}
-      >
+      <p className="text-center text-[10px] px-2 pb-2 leading-relaxed" style={{ color: "rgba(255,255,255,0.15)", fontFamily: "var(--font-body)" }}>
         CampusConnect · Made for verified students · v1.0
       </p>
     </aside>

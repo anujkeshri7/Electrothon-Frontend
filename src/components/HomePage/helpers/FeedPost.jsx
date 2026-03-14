@@ -7,15 +7,49 @@ const TYPE_CONFIG = {
   project:  { label: "Project",  color: "#34d399", bg: "rgba(52,211,153,0.12)", border: "rgba(52,211,153,0.25)" },
 };
 
+// ── Helpers ───────────────────────────────────────────────────
+function getInitials(name = "") {
+  return name.trim().split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function getColorFromName(name = "") {
+  const colors = ["#f97316", "#6366f1", "#ec4899", "#10b981", "#3b82f6", "#8b5cf6", "#14b8a6", "#f59e0b"];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+
+// Tags aaye chahe "react,json" format mein ya ["#he","#the"] — dono handle karta hai
+function parseTags(tags = []) {
+  return tags
+    .flatMap((t) => t.split(","))
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((t) => (t.startsWith("#") ? t : `#${t}`));
+}
+
+// ── Image Grid ────────────────────────────────────────────────
 function ImageGrid({ images }) {
   const [lightbox, setLightbox] = useState(null);
-  if (!images?.length) return null;
-  const count = images.length;
 
+  // API se images objects aate hain {url, public_id, _id} — URLs nikaalo
+  const urls = (images || []).map((img) => (typeof img === "string" ? img : img.url)).filter(Boolean);
+  if (!urls.length) return null;
+
+  const count = urls.length;
   const gridConfig = {
-    1: { cols: "1fr", rows: "280px" },
-    2: { cols: "1fr 1fr", rows: "220px" },
-    3: { cols: "1fr 1fr", rows: "160px 160px" },
+    1: { cols: "1fr",       rows: "280px" },
+    2: { cols: "1fr 1fr",   rows: "220px" },
+    3: { cols: "1fr 1fr",   rows: "160px 160px" },
   };
   const cfg = gridConfig[Math.min(count, 3)];
 
@@ -25,13 +59,13 @@ function ImageGrid({ images }) {
         className="grid gap-1.5 rounded-2xl overflow-hidden mt-4"
         style={{ gridTemplateColumns: cfg.cols, gridTemplateRows: cfg.rows }}
       >
-        {images.slice(0, 3).map((src, i) => (
+        {urls.slice(0, 3).map((src, i) => (
           <div
             key={i}
             className="relative overflow-hidden cursor-zoom-in group"
             style={{
               gridColumn: count === 3 && i === 0 ? "1/2" : "auto",
-              gridRow: count === 3 && i === 0 ? "1/3" : "auto",
+              gridRow:    count === 3 && i === 0 ? "1/3" : "auto",
             }}
             onClick={() => setLightbox(src)}
           >
@@ -56,12 +90,7 @@ function ImageGrid({ images }) {
           style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(12px)" }}
           onClick={() => setLightbox(null)}
         >
-          <img
-            src={lightbox}
-            alt=""
-            className="max-w-full max-h-full rounded-2xl"
-            style={{ maxHeight: "88vh", boxShadow: "0 40px 100px rgba(0,0,0,0.8)" }}
-          />
+          <img src={lightbox} alt="" className="max-w-full max-h-full rounded-2xl" style={{ maxHeight: "88vh", boxShadow: "0 40px 100px rgba(0,0,0,0.8)" }} />
           <button
             className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center"
             style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "white", fontSize: "18px", cursor: "pointer" }}
@@ -72,7 +101,8 @@ function ImageGrid({ images }) {
   );
 }
 
-function ActionBtn({ icon: Icon, count, active, activeColor, onClick, label }) {
+// ── Action Button ─────────────────────────────────────────────
+function ActionBtn({ icon: Icon, count, active, activeColor, onClick }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
@@ -94,22 +124,44 @@ function ActionBtn({ icon: Icon, count, active, activeColor, onClick, label }) {
   );
 }
 
+// ── Main FeedPost ─────────────────────────────────────────────
+// Accepts BOTH old dummy format AND real API format
 export default function FeedPost({ post, index }) {
   const [liked, setLiked] = useState(post.liked || false);
   const [saved, setSaved] = useState(post.saved || false);
-  const [likeCount, setLikeCount] = useState(post.likes);
+  const [likeCount, setLikeCount] = useState(post.likes ?? post.score ?? 0);
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
-  const typeConfig = TYPE_CONFIG[post.type];
+
+  // ── Normalize API format → internal format ──
+  const isApiFormat = !!post.createdBy; // API posts have createdBy, dummy posts have author
+
+  const author = isApiFormat ? {
+    name:        post.createdBy.name,
+    avatar:      post.createdBy.avatar || null,
+    initials:    getInitials(post.createdBy.name),
+    role:        post.createdBy.headline || post.createdBy.branch || "",
+    college:     post.createdBy.branch || "",
+    collegeColor: getColorFromName(post.createdBy.name),
+    verified:    true,
+  } : post.author;
+
+  const timeLabel = isApiFormat ? timeAgo(post.createdAt) : post.time;
+  const tags      = isApiFormat ? parseTags(post.tags) : (post.tags || []);
+  const title     = isApiFormat ? post.title : null;
+  const comments  = post.comments ?? 0;
+  const shares    = post.shares ?? 0;
+  const type      = post.type || "post";
+  const typeConfig = TYPE_CONFIG[type] || TYPE_CONFIG.post;
 
   const handleLike = () => {
     setLiked((l) => !l);
     setLikeCount((c) => liked ? c - 1 : c + 1);
   };
 
-  const formatContent = (text) =>
-    text.split("\n").map((line, i) => (
-      <span key={i}>{line}{i < text.split("\n").length - 1 && <br />}</span>
+  const formatContent = (text = "") =>
+    text.split("\n").map((line, i, arr) => (
+      <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
     ));
 
   return (
@@ -129,60 +181,62 @@ export default function FeedPost({ post, index }) {
         {/* Author row */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            {/* Avatar */}
+            {/* Avatar — image ya initials */}
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0 cursor-pointer"
               style={{
-                background: post.author.collegeColor + "22",
-                border: `1.5px solid ${post.author.collegeColor}40`,
-                color: post.author.collegeColor,
+                background: author.avatar ? "transparent" : author.collegeColor + "22",
+                border: `1.5px solid ${author.collegeColor}40`,
+                color: author.collegeColor,
                 fontFamily: "var(--font-display)",
               }}
             >
-              {post.author.initials}
+              {author.avatar
+                ? <img src={author.avatar} alt={author.name} className="w-full h-full object-cover" />
+                : author.initials
+              }
             </div>
+
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
                   className="text-sm font-semibold text-white cursor-pointer hover:text-indigo-300 transition-colors"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
-                  {post.author.name}
+                  {author.name}
                 </span>
-                {post.author.verified && (
-                  <CheckCircle2 size={13} style={{ color: post.author.collegeColor, flexShrink: 0 }} />
+                {author.verified && (
+                  <CheckCircle2 size={13} style={{ color: author.collegeColor, flexShrink: 0 }} />
                 )}
-                <span
-                  className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full"
-                  style={{
-                    background: post.author.collegeColor + "15",
-                    color: post.author.collegeColor,
-                    border: `1px solid ${post.author.collegeColor}30`,
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  {post.author.college}
-                </span>
+                {author.college && (
+                  <span
+                    className="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full"
+                    style={{
+                      background: author.collegeColor + "15",
+                      color: author.collegeColor,
+                      border: `1px solid ${author.collegeColor}30`,
+                      fontFamily: "var(--font-body)",
+                    }}
+                  >
+                    {author.college}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span
-                  className="text-xs"
-                  style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)" }}
-                >
-                  {post.author.role}
-                </span>
-                <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "10px" }}>·</span>
-                <span
-                  className="text-xs"
-                  style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--font-body)" }}
-                >
-                  {post.time}
+                {author.role && (
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-body)" }}>
+                    {author.role}
+                  </span>
+                )}
+                {author.role && <span style={{ color: "rgba(255,255,255,0.15)", fontSize: "10px" }}>·</span>}
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--font-body)" }}>
+                  {timeLabel}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right — type badge + menu */}
+          {/* Type badge + menu */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <span
               className="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider hidden sm:block"
@@ -207,6 +261,16 @@ export default function FeedPost({ post, index }) {
           </div>
         </div>
 
+        {/* Title (only for API posts) */}
+        {title && (
+          <h3
+            className="text-base font-bold text-white mb-2 leading-snug"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {title}
+          </h3>
+        )}
+
         {/* Content */}
         <div
           className="text-sm leading-7 mb-1"
@@ -219,9 +283,9 @@ export default function FeedPost({ post, index }) {
         <ImageGrid images={post.images} />
 
         {/* Tags */}
-        {post.tags?.length > 0 && (
+        {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {post.tags.map((tag) => (
+            {tags.map((tag) => (
               <span
                 key={tag}
                 className="text-xs font-medium cursor-pointer transition-colors duration-150 hover:text-indigo-300"
@@ -247,18 +311,15 @@ export default function FeedPost({ post, index }) {
           style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--font-body)" }}
           onClick={() => setShowComment((s) => !s)}
         >
-          {post.comments} comments · {post.shares} shares
+          {comments} comments · {shares} shares
         </span>
       </div>
 
       {/* Action bar */}
-      <div
-        className="flex items-center px-3 py-1"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
-      >
+      <div className="flex items-center px-3 py-1" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <ActionBtn icon={Heart} count={likeCount} active={liked} activeColor="#f87171" onClick={handleLike} />
-        <ActionBtn icon={MessageCircle} count={post.comments} onClick={() => setShowComment((s) => !s)} />
-        <ActionBtn icon={Share2} count={post.shares} />
+        <ActionBtn icon={MessageCircle} count={comments} onClick={() => setShowComment((s) => !s)} />
+        <ActionBtn icon={Share2} count={shares} />
         <div className="ml-auto">
           <ActionBtn icon={Bookmark} active={saved} activeColor="#a5b4fc" onClick={() => setSaved((s) => !s)} />
         </div>
