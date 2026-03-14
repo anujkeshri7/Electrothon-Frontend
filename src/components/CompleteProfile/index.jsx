@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState  } from "react";
 import StepIndicator from "./helpers/StepIndicator";
 import BasicInfo from "./helpers/BasicInfo";
 import AcademicInfo from "./helpers/AcademicInfo";
 import SkillsInterests from "./helpers/SkillsInterests";
 import SocialLinks from "./helpers/SocialLinks";
 import ProfileSuccess from "./helpers/ProfileSuccess";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const STEPS = { BASIC: 1, ACADEMIC: 2, SKILLS: 3, SOCIAL: 4, SUCCESS: 5 };
 
@@ -21,6 +23,66 @@ export default function CompleteProfile() {
     // Social
     github: "", linkedin: "", portfolio: "", twitter: "", instagram: "",
   });
+
+
+  console.log("Current Profile Data:", profileData); // Debug log
+
+  const { studentId } = useParams();
+
+  const onSubmit = async () => {
+
+    
+    const formData = new FormData();
+
+  // Basic
+  if (profileData.avatar) {
+    formData.append("avatar", profileData.avatar);
+  }
+
+  formData.append("headline", profileData.headline);
+  formData.append("bio", profileData.bio);
+
+  // Academic
+  formData.append("branch", profileData.branch);
+  formData.append("cgpa", profileData.cgpa);
+  formData.append("currentYear", profileData.currentYear);
+  formData.append("graduationYear", profileData.graduationYear);
+  formData.append("rollNumber", profileData.rollNumber);
+
+  // Skills
+  profileData.skills.forEach(skill => {
+    formData.append("skills", skill);
+  });
+
+  profileData.interests.forEach(interest => {
+    formData.append("interests", interest);
+  });
+
+  profileData.openTo.forEach(item => {
+    formData.append("openTo", item);
+  });
+
+  // Social
+  formData.append("github", profileData.github);
+  formData.append("linkedin", profileData.linkedin);
+  formData.append("portfolio", profileData.portfolio);
+  formData.append("twitter", profileData.twitter);
+  formData.append("instagram", profileData.instagram);
+
+  
+    console.log("Final Submitted Data:", profileData); // Debug log
+    
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/profile/complete-profile/${studentId}`, formData);
+      console.log("Profile data submitted successfully:", res.data);
+      if (!res.data.success) {
+    throw new Error("Submission failed");
+  }
+    } catch (error) {
+      console.error("Error submitting profile data:", error);
+    throw error; // IMPORTANT
+    }
+  }
 
   const transition = (fn) => {
     setTransitioning(true);
@@ -132,6 +194,7 @@ export default function CompleteProfile() {
               data={profileData}
               onNext={(d) => goNext({ links: d })}
               onBack={goBack}
+              onSubmit={onSubmit}
             />
           )}
 

@@ -44,7 +44,7 @@ const SOCIAL_FIELDS = [
   },
 ];
 
-function SocialInput({ field, value, onChange }) {
+function SocialInput({ field, value, onChange  }) {
   const [focused, setFocused] = useState(false);
   const Icon = field.icon;
   const hasValue = value && value.trim().length > 0;
@@ -121,7 +121,7 @@ function SocialInput({ field, value, onChange }) {
   );
 }
 
-export default function SocialLinks({ data, onNext, onBack }) {
+export default function SocialLinks({ data, onNext, onBack, onSubmit }) {
   const [links, setLinks] = useState({
     github: data.github || "",
     linkedin: data.linkedin || "",
@@ -129,6 +129,8 @@ export default function SocialLinks({ data, onNext, onBack }) {
     twitter: data.twitter || "",
     instagram: data.instagram || "",
   });
+
+  
 
   const filledCount = Object.values(links).filter((v) => v.trim()).length;
 
@@ -196,7 +198,14 @@ export default function SocialLinks({ data, onNext, onBack }) {
 
       {/* CTA */}
       <button
-        onClick={() => onNext(links)}
+        onClick={async () => {
+  try {
+    await onSubmit();   // pehle submit
+    onNext(links);      // success hua to next
+  } catch (error) {
+    console.log(error); // error aya to next nahi chalega
+  }
+}}
         className="w-full mt-6 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300"
         style={{
           background: "linear-gradient(135deg, #6366f1, #8b5cf6)",

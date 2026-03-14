@@ -16,6 +16,8 @@ export default function StudentRegistration() {
     yearOfStudy: "",
   });
 
+  const [studentId, setStudentId] = useState("");
+
   const goNext = (data = {}) => {
     setTransitioning(true);
     setFormData((prev) => ({ ...prev, ...data }));
@@ -135,6 +137,7 @@ export default function StudentRegistration() {
               email={formData.email}
               onVerified={() => goNext()}
               onBack={goBack}
+              setStudentId={setStudentId}
             />
           )}
 
@@ -142,6 +145,7 @@ export default function StudentRegistration() {
             <SuccessStep
               name={formData.fullName}
               college={selectedCollege}
+              studentId={studentId}
             />
           )}
         </div>

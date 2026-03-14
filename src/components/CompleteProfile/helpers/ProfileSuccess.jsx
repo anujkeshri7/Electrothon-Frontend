@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Sparkles, ArrowRight, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSuccess({ profileData }) {
   const [show, setShow] = useState(false);
   const [showActions, setShowActions] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const t1 = setTimeout(() => setShow(true), 300);
@@ -122,7 +125,7 @@ export default function ProfileSuccess({ profileData }) {
         }}
       >
         <button
-          onClick={() => alert("Redirecting to Home Feed...")}
+          onClick={() => navigate('/')}
           className="w-full py-4 rounded-xl text-sm font-semibold flex items-center justify-between px-5 group transition-all duration-200"
           style={{
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
