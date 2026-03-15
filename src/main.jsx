@@ -11,6 +11,7 @@ import CommunityPage from './pages/CommunityPage.jsx'
 import SignInPage from './components/signin/index.jsx'
 import SignIn from './components/signin/index.jsx'
 import AIRecommendations from './components/AIRecommendations/index.jsx'
+import PostDetail from "./components/PostDetail";
 
 
 
@@ -22,8 +23,9 @@ const router = createBrowserRouter([
       {path: '/login', element:<SignIn/>},
       {path: '/communities', element:<CommunityPage/> },
       {path: '/complete-profile/:studentId', element: <CompleteProfilePage/>},
-      {path: '/profile/me', element: <ProfilePage/>},
-      {path: '/ai-recommendations', element: <AIRecommendations/>}
+      {path: '/profile/:id', element: <ProfilePage/>},
+      {path: '/ai-recommendations', element: <AIRecommendations/>},
+      {path: '/post/:postId', element: <PostDetail/>}
    ],
   }
 ])

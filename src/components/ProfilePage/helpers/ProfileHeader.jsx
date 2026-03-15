@@ -23,10 +23,37 @@ function formatJoined(id = "") {
   return new Date(ts).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 }
 
-// ── ProfileHeader ─────────────────────────────────────────────
-export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, postsCount }) {
-  const [following, setFollowing] = useState(false);
-  const [copied,    setCopied]    = useState(false);
+// ── Component ─────────────────────────────────────────────────
+export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, currentUserId, currentUserConnections = [], postsCount = 0 }) {
+  // Check if already connected
+  const alreadyConnected = currentUserConnections.some(
+    id => id?.toString() === user?._id?.toString()
+  );
+
+  const [connected, setConnected]   = useState(alreadyConnected);
+  const [connecting, setConnecting] = useState(false);
+  const [copied, setCopied]         = useState(false);
+
+  const handleConnect = async () => {
+    if (!currentUserId || !user?._id || connecting) return;
+    setConnecting(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "")}/api/profile/connect/${user._id}`,
+        { method: "POST", credentials: "include" }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setConnected(c => !c);
+      } else {
+        console.error("Connect failed:", data.message);
+      }
+    } catch (err) {
+      console.error("Connect error:", err.message);
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -48,10 +75,15 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, pos
   const collegeShort = user.collegeShort || collegeName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 4);
   const collegeColor = user.collegeColor || "#6366f1";
 
+  // Stats — real data
+  const connectionsCount = Array.isArray(user.connections)
+    ? user.connections.length
+    : (user.stats?.connections ?? 0);
+
   const stats = {
-    connections: user.stats?.connections ?? user.connections ?? 0,
-    posts:       user.stats?.posts       ?? user.posts       ?? 0,
-    projects:    user.stats?.projects    ?? user.projects    ?? 0,
+    connections: connectionsCount,
+    posts:       postsCount || user.stats?.posts || 0,
+    projects:    user.stats?.projects ?? 0,
   };
 
   const cgpaColor = cgpaToColor(cgpa);
@@ -130,60 +162,84 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, pos
             )}
           </div>
 
-          {/* Buttons */}
-          <div className="flex items-center gap-2 pb-1">
-            {isOwnProfile ? (
-              <button
-                onClick={onEditProfile}
-                className="px-4 py-2 rounded-xl text-xs font-semibold transition-colors duration-150"
-                style={{ background: "rgba(99,102,241,0.14)", border: "1px solid rgba(99,102,241,0.3)", color: "#a5b4fc", fontFamily: "var(--font-body)", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.24)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.14)"; }}
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => setFollowing((f) => !f)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all duration-150"
-                  style={{
-                    background: following ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
-                    border: following ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(99,102,241,0.4)",
-                    boxShadow: following ? "none" : "0 4px 14px rgba(99,102,241,0.28)",
-                    fontFamily: "var(--font-body)", cursor: "pointer",
-                  }}
-                >
-                  {following ? "Following" : <><UserPlus size={13} />Connect</>}
-                </button>
-                <button
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors duration-150"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-                >
-                  <MessageCircle size={14} className="text-white/70" />
-                </button>
-              </>
-            )}
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 pb-1">
+          {isOwnProfile ? (
             <button
-              onClick={handleShare}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150"
-              style={{
-                background: copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
-                border: copied ? "1px solid rgba(52,211,153,0.28)" : "1px solid rgba(255,255,255,0.1)",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.09)"; }}
-              onMouseLeave={(e) => { if (!copied) e.currentTarget.style.background = copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)"; }}
+              onClick={onEditProfile}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+              style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.35)", color: "#a5b4fc", fontFamily: "var(--font-body)", cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.15)"; }}
             >
-              {copied
-                ? <CheckCircle2 size={14} style={{ color: "#34d399" }} />
-                : <Share2 size={14} className="text-white/60" />
-              }
+              Edit Profile
             </button>
-          </div>
+          ) : (
+            <>
+              <button
+                onClick={connected ? undefined : handleConnect}
+                disabled={connecting}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                style={{
+                  background: connected
+                    ? "rgba(52,211,153,0.08)"
+                    : connecting
+                    ? "rgba(99,102,241,0.1)"
+                    : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  border: connected
+                    ? "1px solid rgba(52,211,153,0.25)"
+                    : connecting
+                    ? "1px solid rgba(99,102,241,0.2)"
+                    : "1px solid rgba(99,102,241,0.4)",
+                  color: connected ? "#34d399" : "white",
+                  fontFamily: "var(--font-display)",
+                  boxShadow: connected || connecting ? "none" : "0 4px 16px rgba(99,102,241,0.3)",
+                  cursor: connected || connecting ? "default" : "pointer",
+                  opacity: connecting ? 0.7 : 1,
+                }}
+              >
+                {connecting ? (
+                  <>
+                    <span
+                      className="w-3 h-3 border-2 rounded-full animate-spin inline-block mr-1.5"
+                      style={{ borderColor: "white", borderTopColor: "transparent" }}
+                    />
+                    Connecting...
+                  </>
+                ) : connected ? (
+                  <>✓ Connected</>
+                ) : (
+                  <><UserPlus size={14} /> Connect</>
+                )}
+              </button>
+              <button
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              >
+                <MessageCircle size={15} className="text-white" />
+              </button>
+            </>
+          )}
+          <button
+            onClick={handleShare}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+            style={{
+              background: copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
+              border: copied ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.1)",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+            onMouseLeave={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+          >
+            {copied
+              ? <CheckCircle2 size={15} style={{ color: "#34d399" }} />
+              : <Share2 size={15} className="text-white" />
+            }
+          </button>
         </div>
+      </div>
 
         {/* ── Name + verified ──────────────────────────────────── */}
         <div className="mb-2.5">
@@ -224,58 +280,51 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, pos
             {collegeName}
           </div>
 
-          {(branch || currentYear) && (
-            <div className="flex items-center gap-1 text-xs text-white/35" style={{ fontFamily: "var(--font-body)" }}>
-              <GraduationCap size={11} className="flex-shrink-0" />
-              {branch && branch.split(" ")[0]}{branch && currentYear ? " · " : ""}{currentYear}
-            </div>
-          )}
+        {/* Branch + Year */}
+        {(branch || currentYear) && (
+          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}>
+            <MapPin size={11} />
+            {branch && branch.split(" ")[0]}{branch && currentYear ? " · " : ""}{currentYear}
+          </div>
+        )}
 
-          {joinedAt && (
-            <div className="flex items-center gap-1 text-xs text-white/30" style={{ fontFamily: "var(--font-body)" }}>
-              <Calendar size={11} className="flex-shrink-0" />
-              {joinedAt}
-            </div>
-          )}
+        {/* Joined */}
+        {joinedAt && (
+          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}>
+            <Calendar size={11} />
+            Joined {joinedAt}
+          </div>
+        )}
 
-          {rollNumber && (
-            <span className="text-[11px] text-white/22 font-mono tracking-wide" style={{ fontFamily: "var(--font-body)" }}>
-              #{rollNumber.toUpperCase()}
-            </span>
-          )}
+        {/* CGPA */}
+        {cgpa && (
+          <div
+            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: cgpaColor + "15", border: `1px solid ${cgpaColor}30`, color: cgpaColor, fontFamily: "var(--font-body)" }}
+          >
+            CGPA {cgpa}
+          </div>
+        )}
 
-          {/* CGPA pill */}
-          {cgpa && (
-            <span
-              className="inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full"
-              style={{ background: cgpaColor + "15", border: `1px solid ${cgpaColor}28`, color: cgpaColor, fontFamily: "var(--font-body)" }}
-            >
-              CGPA {cgpa}
-            </span>
-          )}
-        </div>
+        {/* Roll number */}
+        {rollNumber && (
+          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--font-body)" }}>
+            <GraduationCap size={11} />
+            {rollNumber}
+          </div>
+        )}
+      </div>
 
-        {/* ── Stats strip ──────────────────────────────────────── */}
-        <div className="grid grid-cols-3 divide-x divide-white/[0.06] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.07]">
-          {[
-            { value: stats.connections, label: "Connections" },
-            { value: postsCount,        label: "Posts"       },
-            { value: stats.projects,    label: "Projects"    },
-          ].map(({ value, label }) => (
-            <div
-              key={label}
-              className="flex flex-col items-center py-3 gap-0.5 hover:bg-white/[0.03] transition-colors duration-150 cursor-default select-none"
-            >
-              <span className="text-base font-bold text-white/88" style={{ fontFamily: "var(--font-display)" }}>
-                {(value ?? 0) >= 1000 ? `${((value ?? 0) / 1000).toFixed(1)}k` : (value ?? 0)}
-              </span>
-              <span className="text-[11px] text-white/30" style={{ fontFamily: "var(--font-body)" }}>
-                {label}
-              </span>
-            </div>
-          ))}
-        </div>
-
+      {/* Stats */}
+      <div
+        className="flex items-center justify-around py-4 rounded-2xl"
+        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+      >
+        <StatBox value={stats.connections} label="Connections" />
+        <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <StatBox value={stats.posts} label="Posts" />
+        <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <StatBox value={user?.openTo?.length ?? 0} label="Open to" />
       </div>
     </div>
   );
