@@ -56,7 +56,7 @@ export default function RightSidebar({ userId, radarOnly = false }) {
   useEffect(() => {
     if (!userId) return;
     axios
-      .get(`${import.meta.env.VITE_BACKEND_URL}/api/recommendations/`, {
+      .get(`${import.meta.env.VITE_BACKEND_URL}/api/recommendations`, {
         withCredentials: true,
       })
       .then(res => {
@@ -178,7 +178,7 @@ export default function RightSidebar({ userId, radarOnly = false }) {
 
       {/* AI Opportunity Radar */}
       <button
-        onClick={() => navigate("/ai-recommendations")} 
+        onClick={() => navigate(`/ai-recommendations/${userId}`)} 
         style={{
           width: "100%",
           padding: "18px 20px",

@@ -24,7 +24,7 @@ const router = createBrowserRouter([
       {path: '/communities', element:<CommunityPage/> },
       {path: '/complete-profile/:studentId', element: <CompleteProfilePage/>},
       {path: '/profile/:id', element: <ProfilePage/>},
-      {path: '/ai-recommendations', element: <AIRecommendations/>},
+      {path: '/ai-recommendations/:userId', element: <AIRecommendations/>},
       {path: '/post/:postId', element: <PostDetail/>}
    ],
   }
