@@ -38,9 +38,36 @@ function formatJoined(id = "") {
 }
 
 // ── Component ─────────────────────────────────────────────────
-export default function ProfileHeader({ user, onSettingsOpen, onEditProfile ,postsCount }) {
-  const [following, setFollowing] = useState(false);
-  const [copied, setCopied] = useState(false);
+export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, currentUserId, currentUserConnections = [], postsCount = 0 }) {
+  // Check if already connected
+  const alreadyConnected = currentUserConnections.some(
+    id => id?.toString() === user?._id?.toString()
+  );
+
+  const [connected, setConnected]   = useState(alreadyConnected);
+  const [connecting, setConnecting] = useState(false);
+  const [copied, setCopied]         = useState(false);
+
+  const handleConnect = async () => {
+    if (!currentUserId || !user?._id || connecting) return;
+    setConnecting(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "")}/api/profile/connect/${user._id}`,
+        { method: "POST", credentials: "include" }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setConnected(c => !c);
+      } else {
+        console.error("Connect failed:", data.message);
+      }
+    } catch (err) {
+      console.error("Connect error:", err.message);
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -65,11 +92,15 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile ,pos
   const collegeShort = user.collegeShort || collegeName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 4);
   const collegeColor = user.collegeColor || "#6366f1";
 
-  // Stats — API may or may not include these
+  // Stats — real data
+  const connectionsCount = Array.isArray(user.connections)
+    ? user.connections.length
+    : (user.stats?.connections ?? 0);
+
   const stats = {
-    connections: user.stats?.connections ?? user.connections ?? 0,
-    posts:       user.stats?.posts       ?? user.posts       ?? 0,
-    projects:    user.stats?.projects    ?? user.projects    ?? 0,
+    connections: connectionsCount,
+    posts:       postsCount || user.stats?.posts || 0,
+    projects:    user.stats?.projects ?? 0,
   };
 
   const cgpaColor = cgpaToColor(cgpa);
@@ -150,18 +181,40 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile ,pos
           ) : (
             <>
               <button
-                onClick={() => setFollowing((f) => !f)}
+                onClick={connected ? undefined : handleConnect}
+                disabled={connecting}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
                 style={{
-                  background: following ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  border: following ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(99,102,241,0.4)",
-                  color: "white",
+                  background: connected
+                    ? "rgba(52,211,153,0.08)"
+                    : connecting
+                    ? "rgba(99,102,241,0.1)"
+                    : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  border: connected
+                    ? "1px solid rgba(52,211,153,0.25)"
+                    : connecting
+                    ? "1px solid rgba(99,102,241,0.2)"
+                    : "1px solid rgba(99,102,241,0.4)",
+                  color: connected ? "#34d399" : "white",
                   fontFamily: "var(--font-display)",
-                  boxShadow: following ? "none" : "0 4px 16px rgba(99,102,241,0.3)",
-                  cursor: "pointer",
+                  boxShadow: connected || connecting ? "none" : "0 4px 16px rgba(99,102,241,0.3)",
+                  cursor: connected || connecting ? "default" : "pointer",
+                  opacity: connecting ? 0.7 : 1,
                 }}
               >
-                {following ? "Following" : <><UserPlus size={14} /> Connect</>}
+                {connecting ? (
+                  <>
+                    <span
+                      className="w-3 h-3 border-2 rounded-full animate-spin inline-block mr-1.5"
+                      style={{ borderColor: "white", borderTopColor: "transparent" }}
+                    />
+                    Connecting...
+                  </>
+                ) : connected ? (
+                  <>✓ Connected</>
+                ) : (
+                  <><UserPlus size={14} /> Connect</>
+                )}
               </button>
               <button
                 className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
@@ -270,9 +323,9 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile ,pos
       >
         <StatBox value={stats.connections} label="Connections" />
         <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <StatBox value={postsCount} label="Posts" />
+        <StatBox value={stats.posts} label="Posts" />
         <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <StatBox value={stats.projects} label="Projects" />
+        <StatBox value={user?.openTo?.length ?? 0} label="Open to" />
       </div>
     </div>
   );

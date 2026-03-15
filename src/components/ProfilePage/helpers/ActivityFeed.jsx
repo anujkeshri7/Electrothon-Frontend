@@ -228,7 +228,7 @@ function PostCard({ post, index }) {
 }
 
 // ── Activity Feed ─────────────────────────────────────────────
-export default function ActivityFeed({setPostsCount, userId }) {
+export default function ActivityFeed({ userId, setPostsCount }) {
   const [activeTab, setActiveTab] = useState("All");
   const [posts, setPosts]         = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -244,7 +244,7 @@ export default function ActivityFeed({setPostsCount, userId }) {
       );
       if (res.data.success) {
         setPosts(res.data.posts);
-        setPostsCount(res.data.posts.length);
+        if (setPostsCount) setPostsCount(res.data.posts.length);
       } else {
         setError("Failed to load posts.");
       }
