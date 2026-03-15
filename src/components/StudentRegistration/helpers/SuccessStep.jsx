@@ -24,7 +24,7 @@ export default function SuccessStep({ name, college , studentId }) {
 
   const handleSkip = () => {
     // Redirect to home
-    alert("Redirecting to Home page...");
+    navigate('/');
     // In real app: navigate('/home')
   };
 
