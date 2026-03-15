@@ -5,6 +5,7 @@ import RightSidebar from "./helpers/RightSidebar";
 import CreatePost from "./helpers/CreatePost";
 import PostsFeed from "./helpers/PostsFeed";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
+import { Users, ChevronRight, X } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ChatBot from "../ChatBot";
@@ -15,7 +16,10 @@ export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
- const navigate = useNavigate();
+  const [peopleOpen, setPeopleOpen] = useState(false);
+  const [radarOpen, setRadarOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
@@ -27,21 +31,21 @@ export default function HomePage() {
   const [studentData, setStudentData] = useState(null);
   const [studentId, setStudentId] = useState(null);
 
-  const checkAuth = async ()=>{
+  const checkAuth = async () => {
     try {
-      
-       const res = await axios.get(
+
+      const res = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/auth/check-auth`,
         { withCredentials: true },
       );
-        if (res.data.success) {
-          setStudentId(res.data.student._id);
-        }
+      if (res.data.success) {
+        setStudentId(res.data.student._id);
+      }
 
 
     } catch (error) {
-        navigate("/login");
-      
+      navigate("/login");
+
     }
   }
 
@@ -51,18 +55,18 @@ export default function HomePage() {
 
   const fetchStudentData = async () => {
     try {
-       const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/profile/${studentId}`,
-          { withCredentials: true },
-        );
-        if (res.data.success) {
-          const studentData = res.data.student;
-          console.log("Fetched student data:", studentData);
-          setStudentData(studentData);
-        } else {
-          console.log("Failed to fetch student data:", res.data.message);
-        }
-     
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/profile/${studentId}`,
+        { withCredentials: true },
+      );
+      if (res.data.success) {
+        const studentData = res.data.student;
+        console.log("Fetched student data:", studentData);
+        setStudentData(studentData);
+      } else {
+        console.log("Failed to fetch student data:", res.data.message);
+      }
+
     } catch (error) {
       console.log(
         "Error fetching student data:",
@@ -75,7 +79,7 @@ export default function HomePage() {
     fetchStudentData();
   }, [studentId]);
 
- 
+
 
   const handleProfileClick = () => navigate(`/profile/${studentData?._id}`);
 
@@ -316,11 +320,93 @@ export default function HomePage() {
               scrollbarWidth: "none",
             }}
           >
+
             <RightSidebar userId={studentData?._id} />
+            {/* chatbot icon and widget */}
             <ChatBot userId={studentData?._id} />
           </aside>
+
+          {/* Mobile bottom bar — xl pe hide */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-40 xl:hidden"
+            style={{
+              background: "rgba(7,7,17,0.96)",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(20px)",
+              padding: "10px 16px 18px",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPeopleOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-2xl"
+                style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.22)", cursor: "pointer" }}
+              >
+                <div className="w-6 h-6 rounded-xl flex items-center justify-center" style={{ background: "rgba(99,102,241,0.18)", border: "1.5px solid rgba(99,102,241,0.35)" }}>
+                  <Users size={12} style={{ color: "#6366f1" }} />
+                </div>
+                <span className="text-xs font-semibold" style={{ color: "#6366f1", fontFamily: "var(--font-body)" }}>People</span>
+              </button>
+
+              <button
+                onClick={() => setRadarOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-2xl"
+                style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.22)", cursor: "pointer" }}
+              >
+                <div className="w-6 h-6 rounded-xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.18)", border: "1.5px solid rgba(245,158,11,0.35)" }}>
+                  <ChevronRight size={12} style={{ color: "#f59e0b" }} />
+                </div>
+                <span className="text-xs font-semibold" style={{ color: "#f59e0b", fontFamily: "var(--font-body)" }}>AI Radar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* People sheet */}
+          {peopleOpen && (
+            <div className="fixed inset-0 z-50 xl:hidden" onClick={() => setPeopleOpen(false)}
+              style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }}>
+              <div className="absolute left-0 right-0 bottom-0 rounded-t-3xl overflow-hidden"
+                style={{ background: "rgba(10,10,24,0.98)", border: "1px solid rgba(255,255,255,0.09)", maxHeight: "80vh" }}
+                onClick={e => e.stopPropagation()}>
+                <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full bg-white/20" /></div>
+                <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="text-sm font-semibold text-white/80" style={{ fontFamily: "var(--font-display)" }}>People you may know</span>
+                  <button onClick={() => setPeopleOpen(false)} className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.07)" }}>
+                    <X size={13} className="text-white/60" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-4" style={{ maxHeight: "65vh", scrollbarWidth: "none" }}>
+                  <RightSidebar userId={studentData?._id} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Radar sheet */}
+          {radarOpen && (
+            <div className="fixed inset-0 z-50 xl:hidden" onClick={() => setRadarOpen(false)}
+              style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }}>
+              <div className="absolute left-0 right-0 bottom-0 rounded-t-3xl overflow-hidden"
+                style={{ background: "rgba(10,10,24,0.98)", border: "1px solid rgba(255,255,255,0.09)", maxHeight: "80vh" }}
+                onClick={e => e.stopPropagation()}>
+                <div className="flex justify-center pt-3"><div className="w-10 h-1 rounded-full bg-white/20" /></div>
+                <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="text-sm font-semibold text-white/80" style={{ fontFamily: "var(--font-display)" }}>AI Opportunity Radar</span>
+                  <button onClick={() => setRadarOpen(false)} className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.07)" }}>
+                    <X size={13} className="text-white/60" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto p-4" style={{ maxHeight: "65vh", scrollbarWidth: "none" }}>
+                  {/* AI Radar button from RightSidebar navigates to /ai-recommendations */}
+                  {/* Render RightSidebar in radar-only mode OR just the navigate button */}
+                  <RightSidebar userId={studentData?._id} radarOnly />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      
     </div>
   );
 }

@@ -30,9 +30,9 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, cur
     id => id?.toString() === user?._id?.toString()
   );
 
-  const [connected, setConnected]   = useState(alreadyConnected);
-  const [connecting, setConnecting] = useState(false);
-  const [copied, setCopied]         = useState(false);
+  const [connected,   setConnected]   = useState(alreadyConnected);
+  const [connecting,  setConnecting]  = useState(false);
+  const [copied,      setCopied]      = useState(false);
 
   const handleConnect = async () => {
     if (!currentUserId || !user?._id || connecting) return;
@@ -162,84 +162,86 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, cur
             )}
           </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 pb-1">
-          {isOwnProfile ? (
+          {/* Buttons */}
+          <div className="flex items-center gap-2 pb-1">
+            {isOwnProfile ? (
+              <button
+                onClick={onEditProfile}
+                className="px-4 py-2 rounded-xl text-xs font-semibold transition-colors duration-150"
+                style={{ background: "rgba(99,102,241,0.14)", border: "1px solid rgba(99,102,241,0.3)", color: "#a5b4fc", fontFamily: "var(--font-body)", cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.24)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.14)"; }}
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={connected ? undefined : handleConnect}
+                  disabled={connecting}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
+                  style={{
+                    background: connected
+                      ? "rgba(52,211,153,0.08)"
+                      : connecting
+                      ? "rgba(99,102,241,0.1)"
+                      : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                    border: connected
+                      ? "1px solid rgba(52,211,153,0.25)"
+                      : connecting
+                      ? "1px solid rgba(99,102,241,0.2)"
+                      : "1px solid rgba(99,102,241,0.4)",
+                    color: connected ? "#34d399" : "white",
+                    fontFamily: "var(--font-display)",
+                    boxShadow: connected || connecting ? "none" : "0 4px 16px rgba(99,102,241,0.3)",
+                    cursor: connected || connecting ? "default" : "pointer",
+                    opacity: connecting ? 0.7 : 1,
+                  }}
+                >
+                  {connecting ? (
+                    <>
+                      <span
+                        className="w-3 h-3 border-2 rounded-full animate-spin inline-block mr-1.5"
+                        style={{ borderColor: "white", borderTopColor: "transparent" }}
+                      />
+                      Connecting...
+                    </>
+                  ) : connected ? (
+                    <>✓ Connected</>
+                  ) : (
+                    <><UserPlus size={14} /> Connect</>
+                  )}
+                </button>
+                <button
+                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                >
+                  <MessageCircle size={15} className="text-white" />
+                </button>
+              </>
+            )}
+
+            {/* Share button */}
             <button
-              onClick={onEditProfile}
-              className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-              style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.35)", color: "#a5b4fc", fontFamily: "var(--font-body)", cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.25)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.15)"; }}
+              onClick={handleShare}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+              style={{
+                background: copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
+                border: copied ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+              onMouseLeave={(e) => { if (!copied) e.currentTarget.style.background = copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)"; }}
             >
-              Edit Profile
+              {copied
+                ? <CheckCircle2 size={15} style={{ color: "#34d399" }} />
+                : <Share2 size={15} className="text-white" />
+              }
             </button>
-          ) : (
-            <>
-              <button
-                onClick={connected ? undefined : handleConnect}
-                disabled={connecting}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-                style={{
-                  background: connected
-                    ? "rgba(52,211,153,0.08)"
-                    : connecting
-                    ? "rgba(99,102,241,0.1)"
-                    : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  border: connected
-                    ? "1px solid rgba(52,211,153,0.25)"
-                    : connecting
-                    ? "1px solid rgba(99,102,241,0.2)"
-                    : "1px solid rgba(99,102,241,0.4)",
-                  color: connected ? "#34d399" : "white",
-                  fontFamily: "var(--font-display)",
-                  boxShadow: connected || connecting ? "none" : "0 4px 16px rgba(99,102,241,0.3)",
-                  cursor: connected || connecting ? "default" : "pointer",
-                  opacity: connecting ? 0.7 : 1,
-                }}
-              >
-                {connecting ? (
-                  <>
-                    <span
-                      className="w-3 h-3 border-2 rounded-full animate-spin inline-block mr-1.5"
-                      style={{ borderColor: "white", borderTopColor: "transparent" }}
-                    />
-                    Connecting...
-                  </>
-                ) : connected ? (
-                  <>✓ Connected</>
-                ) : (
-                  <><UserPlus size={14} /> Connect</>
-                )}
-              </button>
-              <button
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-              >
-                <MessageCircle size={15} className="text-white" />
-              </button>
-            </>
-          )}
-          <button
-            onClick={handleShare}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-            style={{
-              background: copied ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.05)",
-              border: copied ? "1px solid rgba(52,211,153,0.3)" : "1px solid rgba(255,255,255,0.1)",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-            onMouseLeave={(e) => { if (!copied) e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
-          >
-            {copied
-              ? <CheckCircle2 size={15} style={{ color: "#34d399" }} />
-              : <Share2 size={15} className="text-white" />
-            }
-          </button>
+          </div>
         </div>
-      </div>
 
         {/* ── Name + verified ──────────────────────────────────── */}
         <div className="mb-2.5">
@@ -280,51 +282,58 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, cur
             {collegeName}
           </div>
 
-        {/* Branch + Year */}
-        {(branch || currentYear) && (
-          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}>
-            <MapPin size={11} />
-            {branch && branch.split(" ")[0]}{branch && currentYear ? " · " : ""}{currentYear}
-          </div>
-        )}
+          {(branch || currentYear) && (
+            <div className="flex items-center gap-1 text-xs text-white/35" style={{ fontFamily: "var(--font-body)" }}>
+              <GraduationCap size={11} className="flex-shrink-0" />
+              {branch && branch.split(" ")[0]}{branch && currentYear ? " · " : ""}{currentYear}
+            </div>
+          )}
 
-        {/* Joined */}
-        {joinedAt && (
-          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-body)" }}>
-            <Calendar size={11} />
-            Joined {joinedAt}
-          </div>
-        )}
+          {joinedAt && (
+            <div className="flex items-center gap-1 text-xs text-white/30" style={{ fontFamily: "var(--font-body)" }}>
+              <Calendar size={11} className="flex-shrink-0" />
+              {joinedAt}
+            </div>
+          )}
 
-        {/* CGPA */}
-        {cgpa && (
-          <div
-            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: cgpaColor + "15", border: `1px solid ${cgpaColor}30`, color: cgpaColor, fontFamily: "var(--font-body)" }}
-          >
-            CGPA {cgpa}
-          </div>
-        )}
+          {rollNumber && (
+            <span className="text-[11px] text-white/22 font-mono tracking-wide" style={{ fontFamily: "var(--font-body)" }}>
+              #{rollNumber.toUpperCase()}
+            </span>
+          )}
 
-        {/* Roll number */}
-        {rollNumber && (
-          <div className="flex items-center gap-1 text-xs" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--font-body)" }}>
-            <GraduationCap size={11} />
-            {rollNumber}
-          </div>
-        )}
-      </div>
+          {/* CGPA pill */}
+          {cgpa && (
+            <span
+              className="inline-flex items-center text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+              style={{ background: cgpaColor + "15", border: `1px solid ${cgpaColor}28`, color: cgpaColor, fontFamily: "var(--font-body)" }}
+            >
+              CGPA {cgpa}
+            </span>
+          )}
+        </div>
 
-      {/* Stats */}
-      <div
-        className="flex items-center justify-around py-4 rounded-2xl"
-        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
-      >
-        <StatBox value={stats.connections} label="Connections" />
-        <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <StatBox value={stats.posts} label="Posts" />
-        <div className="h-8 w-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <StatBox value={user?.openTo?.length ?? 0} label="Open to" />
+        {/* ── Stats strip ──────────────────────────────────────── */}
+        <div className="grid grid-cols-3 divide-x divide-white/[0.06] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.07]">
+          {[
+            { value: stats.connections,        label: "Connections" },
+            { value: stats.posts,              label: "Posts"       },
+            { value: user?.openTo?.length ?? 0, label: "Open to"   },
+          ].map(({ value, label }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center py-3 gap-0.5 hover:bg-white/[0.03] transition-colors duration-150 cursor-default select-none"
+            >
+              <span className="text-base font-bold text-white/88" style={{ fontFamily: "var(--font-display)" }}>
+                {(value ?? 0) >= 1000 ? `${((value ?? 0) / 1000).toFixed(1)}k` : (value ?? 0)}
+              </span>
+              <span className="text-[11px] text-white/30" style={{ fontFamily: "var(--font-body)" }}>
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );
