@@ -3,6 +3,7 @@ import {
   Settings, UserPlus, MessageCircle, Share2,
   CheckCircle2, MapPin, Calendar, GraduationCap,
 } from "lucide-react";
+import axios from "axios";
 
 function StatBox({ value, label }) {
   return (
@@ -52,18 +53,17 @@ export default function ProfileHeader({ user, onSettingsOpen, onEditProfile, cur
     if (!currentUserId || !user?._id || connecting) return;
     setConnecting(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "")}/api/profile/connect/${user._id}`,
-        { method: "POST", credentials: "include" }
-      );
-      const data = await res.json();
-      if (data.success) {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/profile/connect/${user._id}`, {
+        withCredentials: true
+      });
+     
+      if (res.data.success) {
         setConnected(c => !c);
       } else {
-        console.error("Connect failed:", data.message);
+        console.error("Connect failed:", res.data.message);
       }
     } catch (err) {
-      console.error("Connect error:", err.message);
+      console.error("Connect error:", err.response?.data?.message || err.message);
     } finally {
       setConnecting(false);
     }

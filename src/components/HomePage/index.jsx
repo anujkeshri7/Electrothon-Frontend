@@ -50,6 +50,8 @@ export default function HomePage() {
   }, []);
 
   const fetchStudentData = async () => {
+   if(!studentId) return;
+
     try {
        const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/profile/${studentId}`,
@@ -69,6 +71,7 @@ export default function HomePage() {
         error.response?.data?.message || error.message,
       );
     }
+    
   };
 
   useEffect(() => {
