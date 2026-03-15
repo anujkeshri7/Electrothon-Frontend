@@ -57,9 +57,7 @@ export default function HomePage() {
       <div className="fixed inset-0 pointer-events-none" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px)`, backgroundSize: "60px 60px", zIndex: 0 }} />
 
       {/* ── Navbar ── */}
-      <Navbar 
-      studentData={studentData}
-      onProfileClick={handleProfileClick} />
+  <Navbar studentData={studentData} onProfileClick={handleProfileClick} />
 
 
 
@@ -196,7 +194,7 @@ export default function HomePage() {
               scrollbarWidth: "none",
             }}
           >
-            <RightSidebar />
+           <RightSidebar userId={studentData?._id} />
             <ChatBot userId={studentData?._id} />
           </aside>
 
