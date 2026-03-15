@@ -45,7 +45,8 @@ function SectionCard({ title, icon: Icon, children, action }) {
   );
 }
 
-export default function RightSidebar({ userId }) {
+export default function RightSidebar({ userId, radarOnly = false }) {
+
   const [people, setPeople]       = useState([]);
   const [connected, setConnected] = useState({});
   const [loading, setLoading]     = useState(true);
@@ -69,6 +70,7 @@ export default function RightSidebar({ userId }) {
     <aside className="flex flex-col gap-3 sticky top-[72px]">
 
       {/* People you may know */}
+      {!radarOnly && (
       <SectionCard title="People you may know" icon={UserPlus} action="See all">
 
         {/* Scrollable list — 7-8 dikhenge, baad mein scroll */}
@@ -171,11 +173,12 @@ export default function RightSidebar({ userId }) {
             })
           )}
         </div>
-      </SectionCard>
+      </SectionCard> 
+      )}
 
       {/* AI Opportunity Radar */}
       <button
-        onClick={() => navigate("/ai-recommendations")}
+        onClick={() => navigate("/ai-recommendations")} 
         style={{
           width: "100%",
           padding: "18px 20px",

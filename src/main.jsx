@@ -11,7 +11,7 @@ import CommunityPage from './pages/CommunityPage.jsx'
 import SignInPage from './components/signin/index.jsx'
 import SignIn from './components/signin/index.jsx'
 import AIRecommendations from './components/AIRecommendations/index.jsx'
-import PostDetail from "./components/PostDetail";
+import PostDetail from "./components/PostDetail/Index.jsx";
 
 
 

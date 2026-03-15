@@ -57,13 +57,13 @@ export default function ChatBot({ userId }) {
   if (!open) return (
     <button
       onClick={() => setOpen(true)}
-      className="fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+      className="fixed bottom-4 right-6 xl:bottom-13 xl:right-20  z-9999 w-12 h-12 xl:w-14 xl:h-14 rounded-2xl flex items-center justify-center transition-all duration-200 hover:scale-105"
       style={{
         background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
         boxShadow: "0 8px 32px rgba(99,102,241,0.45)",
       }}
     >
-      <Bot size={24} className="text-white" />
+     <Bot size={20} className="text-white xl:w-6 xl:h-6" />
     </button>
   );
 

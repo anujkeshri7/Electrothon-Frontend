@@ -54,8 +54,8 @@ export default function SignIn() {
     
    } catch (error) {
 
-    console.log("Sign-in error:", error);
-      setError("An unexpected error occurred. Please try again.");
+    console.log("Sign-in error:", error.response ? error.response.data : error.message);
+      setError(error.response?.data?.message || "An error occurred during sign-in. Please try again.");
     
    }finally{
     setLoading(false);
