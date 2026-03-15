@@ -19,9 +19,9 @@ export const DUMMY_USER = {
   skills: ["Python", "React", "Machine Learning", "Node.js", "TensorFlow", "Docker", "TypeScript", "FastAPI"],
   interests: ["Hackathons", "Open Source", "Startups", "Research"],
   openTo: [
-    { id: "hackathon", label: "Hackathon teams", icon: "⚡" },
-    { id: "internship", label: "Internships", icon: "💼" },
-    { id: "project", label: "Side projects", icon: "🚀" },
+    { id: "hackathon", label: "Hackathon teams", icon: "" },
+    { id: "internship", label: "Internships", icon: "" },
+    { id: "project", label: "Side projects", icon: "" },
   ],
   socials: {
     github: "github.com/arjunsharma",

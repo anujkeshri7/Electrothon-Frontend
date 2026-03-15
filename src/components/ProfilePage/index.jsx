@@ -11,6 +11,7 @@ import ActivityFeed from "./helpers/ActivityFeed";
 import SettingsPanel from "./helpers/SettingsPanel";
 import { DUMMY_USER } from "./helpers/constants";
 import axios from "axios";
+import Navbar from "../HomePage/helpers/Navbar";
 
 // ─── Card wrapper used throughout ────────────────────────────────────────────
 function Card({ children, className = "" }) {
@@ -118,9 +119,13 @@ export default function ProfilePage() {
      */
     <div
       className="min-h-screen relative overflow-x-hidden"
-      style={{ background: "#070711" }}
+      style={{ background: "#070711" }}x
     >
 
+      <Navbar 
+        studentData={user}
+      onProfileClick={()=>{}}
+      />
       {/* ── Ambient blobs (fixed, never scroll) ───────────────── */}
       <div
         className="fixed pointer-events-none"
