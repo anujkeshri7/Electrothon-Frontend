@@ -5,6 +5,7 @@ import ProfileHeader from "./helpers/ProfileHeader";
 import { AboutSection, AcademicSection, SkillsSection, SocialSection } from "./helpers/ProfileSections";
 import ActivityFeed from "./helpers/ActivityFeed";
 import SettingsPanel from "./helpers/SettingsPanel";
+import Navbar from "../HomePage/helpers/Navbar";
 
 const BASE = () => import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
 
@@ -91,7 +92,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ background: "#070711" }}>
-
+      <Navbar/>
       {/* Blobs */}
       <div className="fixed pointer-events-none" style={{ top: "-10%", left: "-10%", width: "500px", height: "500px", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)", filter: "blur(60px)", zIndex: 0 }} />
       <div className="fixed pointer-events-none" style={{ bottom: "-15%", right: "-10%", width: "400px", height: "400px", borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)", filter: "blur(60px)", zIndex: 0 }} />
