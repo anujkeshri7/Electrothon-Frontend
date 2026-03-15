@@ -152,7 +152,7 @@ export default function Navbar({ studentData, onProfileClick }) {
           <span style={{ color: "white", fontSize: "14px", fontWeight: 800, fontFamily: "var(--font-display)" }}>C</span>
         </div>
         <span className="text-base font-bold hidden sm:block" style={{ color: "white", fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
-          Campus<span style={{ color: "#818cf8" }}>Connect</span>
+          Campus<span style={{ color: "#818cf8" }}>Link</span>
         </span>
       </div>
 
